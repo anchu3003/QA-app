@@ -7,26 +7,63 @@ import { debounce } from "./utils.js";
 
 export const state = {
   collections: [], // meta records (no questions) for the home screen
-  active: null, // { meta, questions, progress }
+  active: null, // { meta, questions, progress, saved, notes }
 
-  mode: "study", // 'study' | 'learn' | 'exam'
+  mode: "study", // 'study' | 'learn' | 'exam' | 'review'
   topic: null,
+  reviewIds: null, // question ids for a "practice incorrect" review session
 
-  quizQuestions: [],
-  answers: [], // Set<string> per question
-  flags: [], // boolean per question (mark-for-review)
-  locked: [], // boolean per question (study/learn reveal)
+  sessionQuestions: [], // full list for this session (before sort/topic filter)
+  sortedQuestions: [], // session list after the sort option is applied
+  quizQuestions: [], // visible list after the topic filter is applied
+
+  // Derived arrays (parallel to quizQuestions) kept in sync by rebuildDerived().
+  answers: [],
+  flags: [],
+  locked: [],
+  // Source of truth keyed by question id — survives filtering/sorting.
+  answersById: new Map(),
+  flagsById: new Set(),
+  lockedById: new Set(),
 
   page: 0,
   pageSize: 25, // questions per page (user-selectable)
   filter: "all", // results filter: all | correct | incorrect | flagged | saved
+  sort: "number", // 'number' | 'random'
+  topicFilter: "", // "" = all topics
 
   examDeadline: 0,
   timerId: null,
 
   theme: "auto", // auto | light | dark
   onlySaved: false, // sidebar: show only saved questions
+  focusIndex: 0, // question targeted by keyboard shortcuts
 };
+
+export function getSelected(questionId) {
+  const key = String(questionId);
+  let set = state.answersById.get(key);
+  if (!set) {
+    set = new Set();
+    state.answersById.set(key, set);
+  }
+  return set;
+}
+
+export function resetSessionMaps() {
+  state.answersById = new Map();
+  state.flagsById = new Set();
+  state.lockedById = new Set();
+}
+
+// Rebuilds the index-based arrays from the id-keyed maps. Cheap, so it can be
+// called whenever the visible question set/order changes.
+export function rebuildDerived() {
+  state.answers = state.quizQuestions.map((q) => getSelected(q.id));
+  state.flags = state.quizQuestions.map((q) => state.flagsById.has(String(q.id)));
+  state.locked = state.quizQuestions.map((q) => state.lockedById.has(String(q.id)));
+  if (state.focusIndex >= state.quizQuestions.length) state.focusIndex = 0;
+}
 
 function snapshotActive() {
   return {

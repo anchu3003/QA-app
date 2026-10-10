@@ -72,6 +72,15 @@ T('groupByTopic sorts + counts', function () {
   var g = groupByTopic([{ topic: 'B', id: 1 }, { topic: 'A', id: 2 }, { topic: 'A', id: 3 }], { 3: true });
   eq(g[0].topic, 'A'); eq(g[0].total, 2); eq(g[0].done, 1);
 });
+T('buildTopicMap + topicSummaries', function () {
+  var qs = [{ id: '1', topic: 'A' }, { id: '2', topic: 'B' }, { id: '3', topic: 'A' }];
+  var map = buildTopicMap(qs);
+  eq(map['1'], 'A'); eq(map['2'], 'B');
+  var sums = topicSummaries(map, { '1': true, '3': true });
+  eq(sums.length, 2);
+  eq(sums[0].topic, 'A'); eq(sums[0].total, 2); eq(sums[0].done, 2); eq(sums[0].pct, 100);
+  eq(sums[1].topic, 'B'); eq(sums[1].pct, 0);
+});
 T('formatText bold', function () { ok(formatText('**hi**').indexOf('<strong>hi</strong>') >= 0); });
 T('formatText code', function () { ok(formatText('use `code`').indexOf('<code>code</code>') >= 0); });
 T('formatText image', function () { ok(formatText('![alt](https://x.io/a.png)').indexOf('<img') >= 0); });

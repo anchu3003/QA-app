@@ -136,3 +136,34 @@ export function countDone(questions, progress) {
   const done = progress || {};
   return questions.filter((q) => done[q.id]).length;
 }
+
+// { [questionId]: topic } — stored on the collection meta so the home screen can
+// show per-topic progress bars without loading the (large) question array.
+export function buildTopicMap(questions) {
+  const map = {};
+  questions.forEach((q) => {
+    map[String(q.id)] = q.topic || DEFAULT_TOPIC;
+  });
+  return map;
+}
+
+export function topicSummaries(topicMap, progress) {
+  const totals = new Map();
+  Object.values(topicMap || {}).forEach((topic) => {
+    totals.set(topic, (totals.get(topic) || 0) + 1);
+  });
+
+  const doneByTopic = new Map();
+  Object.keys(progress || {}).forEach((qid) => {
+    const topic = (topicMap || {})[qid];
+    if (!topic) return;
+    doneByTopic.set(topic, (doneByTopic.get(topic) || 0) + 1);
+  });
+
+  return Array.from(totals.entries())
+    .map(([topic, total]) => {
+      const done = doneByTopic.get(topic) || 0;
+      return { topic, total, done, pct: total ? Math.round((done / total) * 100) : 0 };
+    })
+    .sort((a, b) => a.topic.localeCompare(b.topic));
+}

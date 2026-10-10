@@ -15,6 +15,9 @@ import {
   savedCount,
   getNote,
   setNote,
+  getSelected,
+  resetSessionMaps,
+  rebuildDerived,
 } from "./state.js";
 import * as sessionStore from "./session.js";
 import {
@@ -23,6 +26,8 @@ import {
   totalPages,
   getPaginationRange,
   groupByTopic,
+  buildTopicMap,
+  topicSummaries,
 } from "./model.js";
 import { escapeHtml, formatText, shuffle, formatDuration, formatDate, clamp, uid, debounce } from "./utils.js";
 
@@ -36,6 +41,25 @@ export async function refreshCollections() {
   state.collections = await storage.listCollections();
   state.collections.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
   const progressMap = await storage.getAllProgress();
+
+  // Backfill topic maps for collections imported before this feature existed,
+  // so the home screen can show per-topic progress bars.
+  const missing = state.collections.filter((meta) => !meta.topicMap);
+  if (missing.length) {
+    await Promise.all(
+      missing.map(async (meta) => {
+        try {
+          const record = await storage.fetchCollection(meta.id);
+          if (!record) return;
+          meta.topicMap = buildTopicMap(record.questions);
+          await storage.updateMeta(meta);
+        } catch (err) {
+          console.warn("Topic-map backfill failed:", err);
+        }
+      })
+    );
+  }
+
   renderCollectionCards(progressMap);
 }
 
@@ -48,6 +72,22 @@ function renderCollectionCards(progressMap) {
     const total = meta.count || 0;
     const done = Object.keys(progress).length;
     const pct = total ? Math.round((done / total) * 100) : 0;
+
+    const topics = meta.topicMap ? topicSummaries(meta.topicMap, progress) : [];
+    const topicsHtml = topics.length
+      ? `<div class="topic-bars">${topics
+          .map(
+            (t) => `
+        <div class="topic-bar">
+          <div class="topic-bar-head">
+            <span class="topic-bar-name" title="${escapeHtml(t.topic)}">${escapeHtml(t.topic)}</span>
+            <span class="topic-bar-pct">${t.pct}%</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${t.pct}%"></div></div>
+        </div>`
+          )
+          .join("")}</div>`
+      : "";
 
     const card = document.createElement("article");
     card.className = "card collection-card";
@@ -64,6 +104,7 @@ function renderCollectionCards(progressMap) {
         <div class="progress-fill" style="width:${pct}%"></div>
       </div>
       <p class="muted small">${done} / ${total} done (${pct}%)</p>
+      ${topicsHtml}
       <div class="collection-card-actions">
         <button type="button" class="btn btn-primary" data-action="study">📖 Study</button>
         <button type="button" class="btn btn-ghost" data-action="learn">🎯 Learn</button>
@@ -259,6 +300,7 @@ async function saveCollectionFromConfig() {
     examQuestionLimit: limit,
     examTimeMinutes: minutes,
     count: total,
+    topicMap: buildTopicMap(pendingImport.questions),
   };
 
   try {
@@ -395,31 +437,42 @@ export async function showTopics(collectionId) {
 // Quiz session lifecycle (start / resume / persist)
 // ---------------------------------------------------------------------------
 
-export async function startSession(collectionId, mode, topic) {
-  const record = await storage.fetchCollection(collectionId);
-  if (!record || !record.questions.length) {
-    toast("This collection has no questions.", "error");
-    return;
-  }
+function applySort() {
+  state.sortedQuestions = state.sort === "random" ? shuffle(state.sessionQuestions) : state.sessionQuestions.slice();
+}
+
+function applyTopicFilter() {
+  state.quizQuestions = state.topicFilter
+    ? state.sortedQuestions.filter((q) => q.topic === state.topicFilter)
+    : state.sortedQuestions.slice();
+  const pages = totalPages(state.quizQuestions.length, state.pageSize);
+  state.page = clamp(state.page, 0, pages - 1);
+  rebuildDerived();
+}
+
+function populateTopicFilter(questions, selected) {
+  const topics = Array.from(new Set(questions.map((q) => q.topic))).sort((a, b) => a.localeCompare(b));
+  el.topicFilter.innerHTML =
+    `<option value="">All topics</option>` +
+    topics.map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join("");
+  el.topicFilter.value = selected || "";
+}
+
+function beginSession(record, mode, topic, baseQuestions, reviewIds) {
   state.active = record;
   state.mode = mode;
   state.topic = mode === "learn" ? topic || null : null;
+  state.reviewIds = mode === "review" ? reviewIds || baseQuestions.map((q) => q.id) : null;
+  state.sessionQuestions = baseQuestions;
+  state.sort = "number";
+  state.topicFilter = "";
   state.page = 0;
-
-  if (mode === "exam") {
-    // Exam Mode is the only mode that randomly selects/orders questions.
-    const shuffled = shuffle(record.questions);
-    state.quizQuestions = shuffled.slice(0, Math.min(record.meta.examQuestionLimit, shuffled.length));
-  } else if (mode === "learn" && state.topic) {
-    state.quizQuestions = record.questions.filter((q) => q.topic === state.topic);
-  } else {
-    state.quizQuestions = record.questions.slice();
-  }
-
-  state.answers = state.quizQuestions.map(() => new Set());
-  state.flags = state.quizQuestions.map(() => false);
-  state.locked = state.quizQuestions.map(() => false);
+  state.focusIndex = 0;
   state.filter = "all";
+
+  resetSessionMaps();
+  applySort();
+  applyTopicFilter();
 
   stopExamTimer();
   if (mode === "exam") {
@@ -430,16 +483,58 @@ export async function startSession(collectionId, mode, topic) {
   }
 
   el.btnFinishExam.hidden = mode !== "exam";
-  el.flagFilterWrap.hidden = mode !== "exam";
+  el.topicFilterWrap.hidden = mode !== "study";
+  el.sortWrap.hidden = mode === "exam";
+  el.sortSelect.value = "number";
+  el.searchInput.value = "";
   el.flagFilter.checked = false;
   state.onlySaved = false;
   el.savedFilter.checked = false;
   el.quizSidebar.classList.remove("sidebar-open");
   el.btnToggleNavigator.setAttribute("aria-expanded", "false");
 
+  populateTopicFilter(mode === "study" ? record.questions : baseQuestions, "");
+
   showScreen("quiz");
   renderQuizPage();
   saveCurrentSession();
+}
+
+export async function startSession(collectionId, mode, topic) {
+  const record = await storage.fetchCollection(collectionId);
+  if (!record || !record.questions.length) {
+    toast("This collection has no questions.", "error");
+    return;
+  }
+
+  let base;
+  if (mode === "exam") {
+    // Exam Mode randomly selects and orders questions.
+    const shuffled = shuffle(record.questions);
+    base = shuffled.slice(0, Math.min(record.meta.examQuestionLimit, shuffled.length));
+  } else if (mode === "learn" && topic) {
+    base = record.questions.filter((q) => q.topic === topic);
+  } else {
+    base = record.questions.slice();
+  }
+
+  beginSession(record, mode, topic, base, null);
+}
+
+// "Practice incorrect" — a Study-like session limited to a set of question ids.
+export async function startReviewSession(collectionId, ids) {
+  const record = await storage.fetchCollection(collectionId);
+  if (!record) {
+    toast("Collection not found.", "error");
+    return;
+  }
+  const wanted = new Set(ids.map(String));
+  const base = record.questions.filter((q) => wanted.has(String(q.id)));
+  if (!base.length) {
+    toast("Nothing to review.", "info");
+    return;
+  }
+  beginSession(record, "review", null, base, base.map((q) => q.id));
 }
 
 export async function tryResumeSession() {
@@ -452,17 +547,19 @@ export async function tryResumeSession() {
     return false;
   }
   const byId = new Map(record.questions.map((q) => [String(q.id), q]));
-  const order = (saved.order || []).map((id) => byId.get(String(id))).filter(Boolean);
-  if (!order.length) {
+  const toList = (ids) => (ids || []).map((id) => byId.get(String(id))).filter(Boolean);
+
+  const sessionQuestions = toList(saved.sessionOrder);
+  if (!sessionQuestions.length) {
     sessionStore.clearSession();
     return false;
   }
-
-  const answered = (saved.answers || []).filter((a) => a && a.length).length;
+  const sortedQuestions = toList(saved.sortedOrder);
+  const answered = saved.answers ? Object.keys(saved.answers).length : 0;
   const expired = saved.mode === "exam" && saved.deadline && saved.deadline <= Date.now();
   const message =
-    `Resume your ${saved.mode} session on "${record.meta.name}"?\n\n${answered} of ${order.length} answered.` +
-    (expired ? "\n\nThe exam timer has already run out — the exam will be submitted when you resume." : "");
+    `Resume your ${saved.mode} session on "${record.meta.name}"?\n\n${answered} question(s) answered.` +
+    (expired ? "\n\nThe exam timer already ran out — the exam will be submitted when you resume." : "");
   if (!confirm(message)) {
     sessionStore.clearSession();
     return false;
@@ -471,20 +568,41 @@ export async function tryResumeSession() {
   state.active = record;
   state.mode = saved.mode;
   state.topic = saved.topic || null;
-  state.quizQuestions = order;
-  state.answers = order.map((_, i) => new Set((saved.answers && saved.answers[i]) || []));
-  state.flags = order.map((_, i) => !!(saved.flags && saved.flags[i]));
-  state.locked = order.map((_, i) => !!(saved.locked && saved.locked[i]));
-  state.page = clamp(saved.page || 0, 0, totalPages(order.length) - 1);
+  state.reviewIds = saved.reviewIds || null;
+  state.sessionQuestions = sessionQuestions;
+  state.sortedQuestions = sortedQuestions.length ? sortedQuestions : sessionQuestions.slice();
+  state.sort = saved.sort || "number";
+  state.topicFilter = saved.topicFilter || "";
+  state.pageSize = saved.pageSize || state.pageSize;
+  el.pageSize.value = String(state.pageSize);
+
+  resetSessionMaps();
+  Object.entries(saved.answers || {}).forEach(([qid, keys]) => {
+    state.answersById.set(String(qid), new Set(keys));
+  });
+  (saved.flags || []).forEach((qid) => state.flagsById.add(String(qid)));
+  (saved.locked || []).forEach((qid) => state.lockedById.add(String(qid)));
+
+  state.quizQuestions = state.topicFilter
+    ? state.sortedQuestions.filter((q) => q.topic === state.topicFilter)
+    : state.sortedQuestions.slice();
+  rebuildDerived();
+  state.page = clamp(saved.page || 0, 0, totalPages(state.quizQuestions.length, state.pageSize) - 1);
+  state.focusIndex = 0;
   state.filter = "all";
 
   el.btnFinishExam.hidden = saved.mode !== "exam";
-  el.flagFilterWrap.hidden = saved.mode !== "exam";
+  el.topicFilterWrap.hidden = saved.mode !== "study";
+  el.sortWrap.hidden = saved.mode === "exam";
+  el.sortSelect.value = state.sort;
+  el.searchInput.value = "";
   el.flagFilter.checked = false;
   state.onlySaved = false;
   el.savedFilter.checked = false;
   el.quizSidebar.classList.remove("sidebar-open");
   el.btnToggleNavigator.setAttribute("aria-expanded", "false");
+
+  populateTopicFilter(saved.mode === "study" ? record.questions : sessionQuestions, state.topicFilter);
 
   stopExamTimer();
   if (saved.mode === "exam" && saved.deadline > Date.now()) {
@@ -500,15 +618,24 @@ export async function tryResumeSession() {
 
 function saveCurrentSession() {
   if (!state.active) return;
+  const answers = {};
+  state.answersById.forEach((set, qid) => {
+    if (set.size) answers[qid] = Array.from(set);
+  });
   sessionStore.saveSession({
     collectionId: state.active.meta.id,
     mode: state.mode,
     topic: state.topic,
+    reviewIds: state.reviewIds,
     page: state.page,
-    order: state.quizQuestions.map((q) => q.id),
-    answers: state.answers.map((set) => Array.from(set)),
-    flags: state.flags.slice(),
-    locked: state.locked.slice(),
+    pageSize: state.pageSize,
+    sort: state.sort,
+    topicFilter: state.topicFilter,
+    sessionOrder: state.sessionQuestions.map((q) => q.id),
+    sortedOrder: state.sortedQuestions.map((q) => q.id),
+    answers,
+    flags: Array.from(state.flagsById),
+    locked: Array.from(state.lockedById),
     deadline: state.examDeadline,
     savedAt: Date.now(),
   });
@@ -528,7 +655,7 @@ function buildQuestionBlock(qIndex) {
   const selected = state.answers[qIndex];
   const locked = state.locked[qIndex];
   const flagged = state.flags[qIndex];
-  const isStudyLike = state.mode === "study" || state.mode === "learn";
+  const isStudyLike = state.mode === "study" || state.mode === "learn" || state.mode === "review";
   const revealed = isStudyLike && locked;
   const done = isDone(q);
 
@@ -562,7 +689,7 @@ function buildQuestionBlock(qIndex) {
         <button type="button" class="btn btn-icon btn-sm${isSaved(q) ? " is-on" : ""}" data-save aria-pressed="${isSaved(q)}" title="Save question" aria-label="Save question">🔖</button>
         <button type="button" class="btn btn-icon btn-sm${note ? " is-on" : ""}" data-notes aria-expanded="false" title="Notes" aria-label="Notes">📝</button>
         <button type="button" class="btn btn-icon btn-sm" data-copy-link title="Copy link to this question" aria-label="Copy link to this question">🔗</button>
-        ${state.mode === "exam" ? `<button type="button" class="btn btn-icon btn-sm btn-flag${flagged ? " active" : ""}" data-flag aria-pressed="${flagged}" title="Mark for review" aria-label="Mark for review">🚩</button>` : ""}
+        <button type="button" class="btn btn-icon btn-sm btn-flag${flagged ? " active" : ""}" data-flag aria-pressed="${flagged}" title="Mark for review" aria-label="Mark for review">🚩</button>
       </span>
     </span>
   `;
@@ -576,9 +703,7 @@ function buildQuestionBlock(qIndex) {
     if (!notesWrap.hidden) noteInput.focus();
   });
   header.querySelector("[data-copy-link]").addEventListener("click", () => copyQuestionLink(q.id));
-  if (state.mode === "exam") {
-    header.querySelector("[data-flag]").addEventListener("click", () => toggleFlag(qIndex));
-  }
+  header.querySelector("[data-flag]").addEventListener("click", () => toggleFlag(qIndex));
 
   const qText = document.createElement("div");
   qText.className = "question-text";
@@ -641,12 +766,18 @@ function buildQuestionBlock(qIndex) {
   return block;
 }
 
+function modeBadgeText() {
+  if (state.mode === "study") return "Study Mode";
+  if (state.mode === "learn") return `Learn Mode — ${state.topic}`;
+  if (state.mode === "review") return "Review Mode";
+  return "Exam Mode";
+}
+
 export function renderQuizPage(scrollIntoView = false) {
   const pages = totalPages(state.quizQuestions.length, state.pageSize);
   state.page = clamp(state.page, 0, pages - 1);
 
-  el.modeBadge.textContent =
-    state.mode === "study" ? "Study Mode" : state.mode === "learn" ? `Learn Mode — ${state.topic}` : "Exam Mode";
+  el.modeBadge.textContent = modeBadgeText();
   el.modeBadge.className = `mode-badge ${state.mode}`;
   el.timerChip.hidden = state.mode !== "exam";
 
@@ -657,6 +788,11 @@ export function renderQuizPage(scrollIntoView = false) {
   for (let i = start; i < end; i++) {
     el.questionList.appendChild(buildQuestionBlock(i));
   }
+
+  // Keep the keyboard target on the current page and show where it is.
+  if (state.focusIndex < start || state.focusIndex >= end) state.focusIndex = start;
+  const focused = el.questionList.querySelector(`[data-qindex="${state.focusIndex}"]`);
+  if (focused) focused.classList.add("focused");
 
   updateProgressUI();
   renderPagination();
@@ -792,6 +928,53 @@ function gotoQuestion(index) {
   saveSessionSoon();
 }
 
+// The "current" question used by keyboard shortcuts (1-9 / Enter / F / S).
+function setFocusIndex(index) {
+  if (!Number.isFinite(index) || index === state.focusIndex) return;
+  state.focusIndex = index;
+  el.questionList.querySelectorAll(".question-block.focused").forEach((node) => node.classList.remove("focused"));
+  const node = el.questionList.querySelector(`[data-qindex="${index}"]`);
+  if (node) node.classList.add("focused");
+}
+
+function selectOptionByPosition(qIndex, position) {
+  const question = state.quizQuestions[qIndex];
+  if (!question || state.locked[qIndex]) return;
+  const option = question.options[position - 1];
+  if (!option) return;
+  onOptionChange(qIndex, option.key, question.isMulti);
+  const block = el.questionList.querySelector(`[data-qindex="${qIndex}"]`);
+  if (block) {
+    block.querySelectorAll("input").forEach((input) => {
+      input.checked = state.answers[qIndex].has(input.value);
+    });
+  }
+}
+
+function searchQuestions(query) {
+  const needle = String(query || "").trim().toLowerCase();
+  if (!needle) {
+    toast("Type something to search for.");
+    return;
+  }
+  const matches = [];
+  state.quizQuestions.forEach((question, index) => {
+    const haystack = [question.question, question.explanation, ...question.options.map((o) => o.text)]
+      .join(" ")
+      .toLowerCase();
+    if (haystack.includes(needle)) matches.push(index);
+  });
+  if (!matches.length) {
+    toast(`No question matches "${query}".`, "error");
+    return;
+  }
+  gotoQuestion(matches[0]);
+  toast(
+    matches.length === 1 ? "Found 1 match." : `Found ${matches.length} matches — showing the first.`,
+    "success"
+  );
+}
+
 function onOptionChange(qIndex, key, isMulti) {
   const set = state.answers[qIndex];
   if (isMulti) {
@@ -811,8 +994,10 @@ function checkAnswer(qIndex) {
     toast("Select an answer first.");
     return;
   }
-  state.locked[qIndex] = true;
-  markDone(state.quizQuestions[qIndex].id);
+  const question = state.quizQuestions[qIndex];
+  state.lockedById.add(String(question.id));
+  rebuildDerived();
+  markDone(question.id);
   const oldBlock = el.questionList.querySelector(`[data-qindex="${qIndex}"]`);
   if (oldBlock) oldBlock.replaceWith(buildQuestionBlock(qIndex));
   updateProgressUI();
@@ -822,7 +1007,10 @@ function checkAnswer(qIndex) {
 }
 
 function toggleFlag(qIndex) {
-  state.flags[qIndex] = !state.flags[qIndex];
+  const key = String(state.quizQuestions[qIndex].id);
+  if (state.flagsById.has(key)) state.flagsById.delete(key);
+  else state.flagsById.add(key);
+  rebuildDerived();
   const oldBlock = el.questionList.querySelector(`[data-qindex="${qIndex}"]`);
   if (oldBlock) oldBlock.replaceWith(buildQuestionBlock(qIndex));
   updateProgressUI();
@@ -912,6 +1100,34 @@ export function bindQuizToolbar() {
     storage.setSetting("pageSize", size).catch(() => {});
   });
 
+  el.topicFilter.addEventListener("change", () => {
+    state.topicFilter = el.topicFilter.value;
+    state.page = 0;
+    applyTopicFilter();
+    renderQuizPage();
+    saveSessionSoon();
+  });
+
+  el.sortSelect.addEventListener("change", () => {
+    state.sort = el.sortSelect.value === "random" ? "random" : "number";
+    applySort();
+    state.page = 0;
+    applyTopicFilter();
+    renderQuizPage();
+    saveSessionSoon();
+  });
+
+  el.searchForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    searchQuestions(el.searchInput.value);
+  });
+
+  // Track which question the keyboard shortcuts act on.
+  el.questionList.addEventListener("click", (event) => {
+    const block = event.target.closest("[data-qindex]");
+    if (block) setFocusIndex(Number(block.dataset.qindex));
+  });
+
   el.btnFinishExam.addEventListener("click", () => {
     const answered = state.answers.filter((set) => set.size > 0).length;
     const total = state.quizQuestions.length;
@@ -947,6 +1163,7 @@ export function finishQuiz() {
 }
 
 let lastResults = null;
+let lastWrongIds = [];
 
 export function renderResults() {
   lastResults = computeResults(state.quizQuestions, state.answers);
@@ -954,14 +1171,25 @@ export function renderResults() {
   const pct = total ? Math.round((correctCount / total) * 100) : 0;
   const passClass = pct >= 70 ? "pass" : "fail";
   const flaggedCount = state.flags.filter(Boolean).length;
-  const modeLabel = state.mode === "exam" ? "Exam" : state.mode === "learn" ? "Learn Session" : "Study Session";
+  const modeLabel =
+    state.mode === "exam"
+      ? "Exam"
+      : state.mode === "learn"
+        ? "Learn Session"
+        : state.mode === "review"
+          ? "Review Session"
+          : "Study Session";
 
-  el.modeBadge.textContent =
-    state.mode === "study" ? "Study Mode" : state.mode === "learn" ? `Learn Mode — ${state.topic}` : "Exam Mode";
+  el.modeBadge.textContent = modeBadgeText();
   el.modeBadge.className = `mode-badge ${state.mode}`;
   el.timerChip.hidden = true;
   el.btnBackTopics.hidden = state.mode !== "learn";
   el.btnRetake.textContent = state.mode === "exam" ? "Retake (new random set)" : "Retake";
+
+  lastWrongIds = lastResults.details.filter((d) => !d.isCorrect).map((d) => d.q.id);
+  el.btnPracticeWrong.hidden = !lastWrongIds.length;
+  el.btnPracticeWrong.textContent = `🔁 Practice incorrect (${lastWrongIds.length})`;
+  el.btnRetake.className = lastWrongIds.length ? "btn btn-ghost" : "btn btn-primary";
 
   el.resultsSummary.innerHTML = `
     <h1>${escapeHtml(state.active.meta.name)} — ${modeLabel} Complete</h1>
@@ -1066,18 +1294,51 @@ function renderResultItems() {
 }
 
 export function bindResultsActions() {
-  el.btnRetake.addEventListener("click", () => startSession(state.active.meta.id, state.mode, state.topic));
+  el.btnRetake.addEventListener("click", () => {
+    if (state.mode === "review" && state.reviewIds) {
+      startReviewSession(state.active.meta.id, state.reviewIds);
+    } else {
+      startSession(state.active.meta.id, state.mode, state.topic);
+    }
+  });
+  el.btnPracticeWrong.addEventListener("click", () => {
+    if (state.active && lastWrongIds.length) startReviewSession(state.active.meta.id, lastWrongIds);
+  });
   el.btnBackTopics.addEventListener("click", () => showTopics(state.active.meta.id));
   el.btnBackCollections.addEventListener("click", showCollections);
 }
 
-// Keyboard shortcuts for quiz page navigation (accessibility).
+// Keyboard shortcuts: ←/→ page, 1-9 pick an option, Enter check, F flag, S save.
 export function handleGlobalKeydown(event) {
   if (el.screenQuiz.hidden || event.altKey || event.ctrlKey || event.metaKey) return;
   const tag = (event.target.tagName || "").toLowerCase();
   if (tag === "input" || tag === "textarea" || tag === "select") return;
-  if (event.key === "ArrowRight") gotoPage(state.page + 1);
-  else if (event.key === "ArrowLeft") gotoPage(state.page - 1);
+
+  if (event.key === "ArrowRight") {
+    gotoPage(state.page + 1);
+    return;
+  }
+  if (event.key === "ArrowLeft") {
+    gotoPage(state.page - 1);
+    return;
+  }
+  if (event.key === "Enter") {
+    if (state.mode !== "exam") checkAnswer(state.focusIndex);
+    return;
+  }
+
+  const lower = event.key.toLowerCase();
+  if (lower === "f") {
+    toggleFlag(state.focusIndex);
+    return;
+  }
+  if (lower === "s") {
+    toggleSave(state.focusIndex);
+    return;
+  }
+
+  const digit = parseInt(event.key, 10);
+  if (digit >= 1 && digit <= 9) selectOptionByPosition(state.focusIndex, digit);
 }
 
 // Deep link: #q/<collectionId>/<questionId> opens that question in Study mode.

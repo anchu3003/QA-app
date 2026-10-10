@@ -36,6 +36,8 @@
       getPaginationRange,
       totalPages,
       groupByTopic,
+      buildTopicMap,
+      topicSummaries,
     } from "../js/model.js";
     import { formatText, escapeHtml, safeUrl, shuffle, formatDuration, clamp } from "../js/utils.js";
 
@@ -152,6 +154,18 @@
       eq(groups[0].topic, "A");
       eq(groups[0].total, 2);
       eq(groups[0].done, 1);
+    });
+    test(s3, "buildTopicMap + topicSummaries", () => {
+      const map = buildTopicMap([{ id: "1", topic: "A" }, { id: "2", topic: "B" }, { id: "3", topic: "A" }]);
+      eq(map["1"], "A");
+      const sums = topicSummaries(map, { 1: true, 3: true });
+      eq(sums.length, 2);
+      eq(sums[0].topic, "A");
+      eq(sums[0].total, 2);
+      eq(sums[0].done, 2);
+      eq(sums[0].pct, 100);
+      eq(sums[1].topic, "B");
+      eq(sums[1].pct, 0);
     });
 
     const s4 = suite("utils.formatText");

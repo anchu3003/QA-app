@@ -23,6 +23,11 @@ Deploys as plain static files to **GitHub Pages** and **Vercel**.
 - 📝 **Private notes** — attach a note to any question; stored locally and included in exports.
 - 🔗 **Deep links** — copy a link to a specific question; opening it jumps straight to that question.
 - 🔢 **Configurable page size** — show 10 / 25 / 50 / 100 questions per page.
+- 🗂️ **Topic filter & sort** — narrow Study to one topic, and switch between question-number or random order.
+- 🔎 **Search** — jump straight to the first question matching a keyword.
+- ⌨️ **Keyboard shortcuts** — `←/→` change page, `1–9` pick an answer, `Enter` check, `F` flag, `S` save.
+- 🔁 **Practice incorrect** — after a session, drill only the questions you got wrong.
+- 📊 **Per-topic progress bars** on every collection card.
 - ↩️ **Resume sessions** — a refresh or accidental close can be resumed (including a running exam timer).
 - 🔀 **Backup & restore** — export a collection (with progress) to JSON and import it back or on another device.
 - 🌗 **Modern UI with light / dark / auto theme**, accessible (ARIA, focus management, keyboard page nav).
@@ -66,11 +71,13 @@ Both platforms provide the secure HTTPS origin required for service workers/PWA.
 1. **+ Import New Collection** → choose a file, paste JSON, or load a bundled sample.
 2. Set the **collection name**, **exam question count** and **exam time limit** → **Save Collection**.
 3. From a collection card:
-   - **Study** – immediate feedback for every question.
+   - **Study** – immediate feedback for every question. Use the **Topic** filter and **Sort** (number/random)
+     controls, or **Find** to jump to a keyword match.
    - **Learn** – pick a topic first.
-   - **Exam** – timed random subset; use **🧭 Navigator** to jump around and **🚩 Flag** to mark for review.
+   - **Exam** – timed random subset; use **🧭 Navigate** to jump around and **🚩 Flag** to mark for review.
    - **⬇ / ✏️ / 🗑** – export a backup, edit settings, or delete.
-4. At the end you get a score, filters (All / Incorrect / Correct / Flagged) and per-question review.
+4. At the end you get a score, filters (All / Incorrect / Correct / Flagged / Saved) and per-question review.
+   Use **🔁 Practice incorrect** to re-drill just the questions you missed.
 
 ## Quiz JSON format
 

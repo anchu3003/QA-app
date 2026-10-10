@@ -118,18 +118,38 @@
           </div>
         </div>
         <div class="toolbar-actions">
-          <label class="per-page">
-            <span>Per page</span>
-            <select id="page-size" aria-label="Questions per page">
-              <option value="10">10</option>
-              <option value="25" selected>25</option>
-              <option value="50">50</option>
-              <option value="100">100</option>
-            </select>
-          </label>
           <button type="button" id="btn-toggle-navigator" class="btn btn-ghost" aria-expanded="false" aria-controls="quiz-sidebar">🧭 Navigate</button>
           <button type="button" id="btn-finish-exam" class="btn btn-danger" hidden>Submit Exam</button>
         </div>
+      </div>
+
+      <div class="quiz-filters">
+        <label class="toolbar-field" id="topic-filter-wrap">
+          <span>Topic</span>
+          <select id="topic-filter">
+            <option value="">All topics</option>
+          </select>
+        </label>
+        <label class="toolbar-field" id="sort-wrap">
+          <span>Sort</span>
+          <select id="sort-select">
+            <option value="number">Number</option>
+            <option value="random">Random</option>
+          </select>
+        </label>
+        <label class="toolbar-field">
+          <span>Per page</span>
+          <select id="page-size" aria-label="Questions per page">
+            <option value="10">10</option>
+            <option value="25" selected>25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+          </select>
+        </label>
+        <form class="toolbar-field search-field" id="search-form" role="search">
+          <span>Find</span>
+          <input type="search" id="search-input" placeholder="Search questions…" aria-label="Search questions" />
+        </form>
       </div>
 
       <div class="quiz-layout">
@@ -191,7 +211,8 @@
       <div id="results-filter" class="results-filter" role="group" aria-label="Filter results"></div>
       <div id="results-list" class="results-list"></div>
       <div class="results-actions">
-        <button type="button" id="btn-retake" class="btn btn-primary">Retake</button>
+        <button type="button" id="btn-practice-wrong" class="btn btn-primary" hidden>🔁 Practice incorrect</button>
+        <button type="button" id="btn-retake" class="btn btn-ghost">Retake</button>
         <button type="button" id="btn-back-topics" class="btn btn-ghost" hidden>Back to topics</button>
         <button type="button" id="btn-back-collections" class="btn btn-ghost">Back to collections</button>
       </div>
