@@ -125,11 +125,9 @@ js/
   utils.js               Markdown-lite, shuffle, debounce, formatting
   session.js             Resume-session persistence
   pwa.js                 Service-worker registration
-samples/quiz-sample.json Small bundled sample
+samples/quiz-sample.json Bundled sample question set
 tests/tests.html         Browser unit tests for the pure modules
-scripts/                 Python data tools (dedup/cluster/condense)
-quiz-new.json            Full AWS SAA question bank (optional sample)
-image-quiz.json          Sample set demonstrating image questions
+scripts/                 Optional Node-free dev checks (run_unit_tests.py, validate.py)
 ```
 
 ## Testing
@@ -148,8 +146,9 @@ python scripts/validate.py         # JS syntax, DOM ids, import/export graph, JS
 
 - **No build step.** Edit files and refresh. ES modules and the service worker require an HTTP origin,
   so use the local server (`python -m http.server`).
-- The Python scripts in `scripts/` are offline data-processing helpers (dedup/cluster/condense). They
-  default to `quiz-new.json` in the repo root and accept an optional path argument.
+- The large AWS SAA bank used during development lives in the git-ignored `my-collection/` folder, so it
+  is **not** deployed. Deploy the repo as-is (the bundled `samples/quiz-sample.json` ships with the site);
+  to use your own bank, import it through the **file picker**.
 
 ## Browser support
 

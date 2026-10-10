@@ -19,7 +19,6 @@ export const el = {
 
   fileInput: document.getElementById("file-input"),
   btnLoadSample: document.getElementById("btn-load-sample"),
-  btnLoadFull: document.getElementById("btn-load-full"),
   pasteArea: document.getElementById("paste-area"),
   btnLoadPaste: document.getElementById("btn-load-paste"),
   setupStatus: document.getElementById("setup-status"),

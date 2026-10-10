@@ -328,7 +328,6 @@ export function bindImportPanel() {
   });
 
   el.btnLoadSample.addEventListener("click", () => loadSampleFile("samples/quiz-sample.json", "Sample quiz"));
-  el.btnLoadFull.addEventListener("click", () => loadSampleFile("quiz-new.json", "AWS SAA question bank"));
   el.btnImportBackup.addEventListener("click", () => el.backupInput.click());
   el.backupInput.addEventListener("change", (event) => {
     const file = event.target.files && event.target.files[0];

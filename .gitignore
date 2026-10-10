@@ -22,3 +22,5 @@ venv/
 
 # Scratch output from the data-processing scripts
 scripts/*.tmp.json
+
+my-collection/
