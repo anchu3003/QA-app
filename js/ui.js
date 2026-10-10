@@ -414,9 +414,10 @@ export async function startSession(collectionId, mode, topic) {
   }
 
   el.btnFinishExam.hidden = mode !== "exam";
-  el.btnToggleNavigator.hidden = mode !== "exam";
+  el.flagFilterWrap.hidden = mode !== "exam";
   el.flagFilter.checked = false;
-  el.navigatorPanel.hidden = true;
+  el.quizSidebar.classList.remove("sidebar-open");
+  el.btnToggleNavigator.setAttribute("aria-expanded", "false");
 
   showScreen("quiz");
   renderQuizPage();
@@ -460,9 +461,10 @@ export async function tryResumeSession() {
   state.filter = "all";
 
   el.btnFinishExam.hidden = saved.mode !== "exam";
-  el.btnToggleNavigator.hidden = saved.mode !== "exam";
+  el.flagFilterWrap.hidden = saved.mode !== "exam";
   el.flagFilter.checked = false;
-  el.navigatorPanel.hidden = true;
+  el.quizSidebar.classList.remove("sidebar-open");
+  el.btnToggleNavigator.setAttribute("aria-expanded", "false");
 
   stopExamTimer();
   if (saved.mode === "exam" && saved.deadline > Date.now()) {
@@ -610,7 +612,8 @@ export function renderQuizPage(scrollIntoView = false) {
 
   updateProgressUI();
   renderPagination();
-  if (state.mode === "exam" && !el.navigatorPanel.hidden) buildNavigator();
+  updateSidebarStats();
+  buildNavigator();
   if (scrollIntoView) el.questionList.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -626,6 +629,7 @@ function updateProgressUI() {
   if (state.mode === "exam" && flagged) text += ` · 🚩 ${flagged} flagged`;
   el.progressText.textContent = text;
   el.progressFill.style.width = `${total ? (answered / total) * 100 : 0}%`;
+  updateSidebarStats();
 }
 
 function renderPagination() {
@@ -680,14 +684,32 @@ function gotoPage(page) {
 // Question navigator + answer interactions
 // ---------------------------------------------------------------------------
 
+const NAV_MAX = 120;
+
 function buildNavigator() {
   el.navigatorGrid.innerHTML = "";
-  const onlyFlagged = el.flagFilter.checked;
-  let shown = 0;
+  const total = state.quizQuestions.length;
+  const onlyFlagged = el.flagFilter.checked && state.mode === "exam";
 
-  state.quizQuestions.forEach((q, i) => {
-    if (onlyFlagged && !state.flags[i]) return;
-    shown += 1;
+  // Render every question for small sets (e.g. exams); for large banks only the
+  // current page, so the sidebar stays fast with 1000+ questions.
+  let indices = [];
+  if (total <= NAV_MAX) {
+    for (let i = 0; i < total; i++) indices.push(i);
+  } else {
+    const start = state.page * PAGE_SIZE;
+    const end = Math.min(start + PAGE_SIZE, total);
+    for (let i = start; i < end; i++) indices.push(i);
+  }
+  if (onlyFlagged) indices = indices.filter((i) => state.flags[i]);
+
+  if (!indices.length) {
+    el.navigatorGrid.innerHTML = `<p class="muted small">No flagged questions yet.</p>`;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  indices.forEach((i) => {
     const btn = document.createElement("button");
     btn.type = "button";
     const classes = ["nav-chip"];
@@ -698,12 +720,18 @@ function buildNavigator() {
     btn.textContent = String(i + 1);
     btn.title = `Question ${i + 1}${state.flags[i] ? " (flagged for review)" : ""}`;
     btn.addEventListener("click", () => gotoQuestion(i));
-    el.navigatorGrid.appendChild(btn);
+    fragment.appendChild(btn);
   });
+  el.navigatorGrid.appendChild(fragment);
+}
 
-  if (!shown) {
-    el.navigatorGrid.innerHTML = `<p class="muted small">No flagged questions yet.</p>`;
-  }
+function updateSidebarStats() {
+  const total = state.quizQuestions.length;
+  const answered = state.answers.filter((set) => set.size > 0).length;
+  const flagged = state.flags.filter(Boolean).length;
+  el.sidebarAnswered.textContent = `${answered} / ${total}`;
+  el.sidebarFlagged.textContent = String(flagged);
+  el.sidebarFill.style.width = `${total ? (answered / total) * 100 : 0}%`;
 }
 
 function gotoQuestion(index) {
@@ -724,7 +752,7 @@ function onOptionChange(qIndex, key, isMulti) {
     set.add(key);
   }
   updateProgressUI();
-  if (state.mode === "exam" && !el.navigatorPanel.hidden) buildNavigator();
+  buildNavigator();
   saveSessionSoon();
 }
 
@@ -739,6 +767,7 @@ function checkAnswer(qIndex) {
   if (oldBlock) oldBlock.replaceWith(buildQuestionBlock(qIndex));
   updateProgressUI();
   renderPagination();
+  buildNavigator();
   saveSessionSoon();
 }
 
@@ -747,7 +776,7 @@ function toggleFlag(qIndex) {
   const oldBlock = el.questionList.querySelector(`[data-qindex="${qIndex}"]`);
   if (oldBlock) oldBlock.replaceWith(buildQuestionBlock(qIndex));
   updateProgressUI();
-  if (!el.navigatorPanel.hidden) buildNavigator();
+  buildNavigator();
   saveSessionSoon();
 }
 
@@ -790,10 +819,8 @@ function updateTimerDisplay() {
 
 export function bindQuizToolbar() {
   el.btnToggleNavigator.addEventListener("click", () => {
-    const willOpen = el.navigatorPanel.hidden;
-    el.navigatorPanel.hidden = !willOpen;
-    el.btnToggleNavigator.setAttribute("aria-expanded", String(willOpen));
-    if (willOpen) buildNavigator();
+    const open = el.quizSidebar.classList.toggle("sidebar-open");
+    el.btnToggleNavigator.setAttribute("aria-expanded", String(open));
   });
 
   el.flagFilter.addEventListener("change", buildNavigator);

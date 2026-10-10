@@ -118,29 +118,52 @@
           </div>
         </div>
         <div class="toolbar-actions">
-          <button type="button" id="btn-toggle-navigator" class="btn btn-ghost" aria-expanded="false" aria-controls="navigator-panel" hidden>🧭 Navigator</button>
+          <button type="button" id="btn-toggle-navigator" class="btn btn-ghost" aria-expanded="false" aria-controls="quiz-sidebar">🧭 Navigate</button>
           <button type="button" id="btn-finish-exam" class="btn btn-danger" hidden>Submit Exam</button>
         </div>
       </div>
 
-      <div id="navigator-panel" class="card navigator-panel" hidden>
-        <div class="navigator-head">
-          <strong>Question navigator</strong>
-          <label class="flag-toggle">
-            <input type="checkbox" id="flag-filter" />
-            <span>Show only flagged</span>
-          </label>
+      <div class="quiz-layout">
+        <div class="quiz-main">
+          <div id="question-list" class="question-list"></div>
+          <nav id="pagination" class="pagination" aria-label="Question pages"></nav>
         </div>
-        <div id="navigator-grid" class="navigator-grid"></div>
-        <p class="muted small navigator-legend">
-          <span class="legend-dot answered"></span> answered
-          <span class="legend-dot flagged"></span> flagged
-          <span class="legend-dot"></span> unanswered
-        </p>
-      </div>
 
-      <div id="question-list" class="question-list"></div>
-      <nav id="pagination" class="pagination" aria-label="Question pages"></nav>
+        <aside id="quiz-sidebar" class="quiz-sidebar" aria-label="Session summary and navigation">
+          <div class="card sidebar-card">
+            <h2 class="sidebar-title">Session</h2>
+            <div class="sidebar-stats">
+              <div class="sidebar-stat">
+                <span class="sidebar-stat-label">Answered</span>
+                <span id="sidebar-answered" class="sidebar-stat-value">0 / 0</span>
+              </div>
+              <div class="sidebar-stat">
+                <span class="sidebar-stat-label">Flagged</span>
+                <span id="sidebar-flagged" class="sidebar-stat-value">0</span>
+              </div>
+            </div>
+            <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+              <div id="sidebar-fill" class="progress-fill"></div>
+            </div>
+          </div>
+
+          <div class="card sidebar-card">
+            <div class="sidebar-head">
+              <h2 class="sidebar-title">Questions</h2>
+              <label class="flag-toggle" id="flag-filter-wrap" hidden>
+                <input type="checkbox" id="flag-filter" />
+                <span>Flagged only</span>
+              </label>
+            </div>
+            <div id="navigator-grid" class="navigator-grid"></div>
+            <p class="navigator-legend muted small">
+              <span class="legend-dot answered"></span> answered
+              <span class="legend-dot flagged"></span> flagged
+              <span class="legend-dot"></span> unanswered
+            </p>
+          </div>
+        </aside>
+      </div>
     </section>
 
     <!-- RESULTS SCREEN -->
