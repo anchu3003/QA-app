@@ -4,7 +4,18 @@
 
 import { el, toast, showScreen, focusMain, downloadJson, slugify } from "./dom.js";
 import * as storage from "./storage.js";
-import { state, markDone, flushProgress, isDone, isPageDone } from "./state.js";
+import {
+  state,
+  markDone,
+  flushProgress,
+  isDone,
+  isPageDone,
+  isSaved,
+  toggleSaved,
+  savedCount,
+  getNote,
+  setNote,
+} from "./state.js";
 import * as sessionStore from "./session.js";
 import {
   validateAndNormalize,
@@ -12,7 +23,6 @@ import {
   totalPages,
   getPaginationRange,
   groupByTopic,
-  PAGE_SIZE,
 } from "./model.js";
 import { escapeHtml, formatText, shuffle, formatDuration, formatDate, clamp, uid, debounce } from "./utils.js";
 
@@ -279,7 +289,13 @@ async function importBackup(file) {
       examTimeMinutes: data.examTimeMinutes || 90,
       count: questions.length,
     };
-    await storage.saveCollection({ meta, questions, progress: data.progress || {} });
+    await storage.saveCollection({
+      meta,
+      questions,
+      progress: data.progress || {},
+      saved: data.saved || {},
+      notes: data.notes || {},
+    });
     resetImportPanel();
     toast(`Imported backup "${name}".`, "success");
     refreshCollections();
@@ -416,6 +432,8 @@ export async function startSession(collectionId, mode, topic) {
   el.btnFinishExam.hidden = mode !== "exam";
   el.flagFilterWrap.hidden = mode !== "exam";
   el.flagFilter.checked = false;
+  state.onlySaved = false;
+  el.savedFilter.checked = false;
   el.quizSidebar.classList.remove("sidebar-open");
   el.btnToggleNavigator.setAttribute("aria-expanded", "false");
 
@@ -463,6 +481,8 @@ export async function tryResumeSession() {
   el.btnFinishExam.hidden = saved.mode !== "exam";
   el.flagFilterWrap.hidden = saved.mode !== "exam";
   el.flagFilter.checked = false;
+  state.onlySaved = false;
+  el.savedFilter.checked = false;
   el.quizSidebar.classList.remove("sidebar-open");
   el.btnToggleNavigator.setAttribute("aria-expanded", "false");
 
@@ -517,6 +537,18 @@ function buildQuestionBlock(qIndex) {
   block.dataset.qindex = String(qIndex);
   block.id = `question-${qIndex}`;
 
+  const note = getNote(q.id);
+  const notesWrap = document.createElement("div");
+  notesWrap.className = "notes-panel";
+  notesWrap.hidden = true;
+  notesWrap.innerHTML = `
+    <label class="notes-label" for="note-${qIndex}">Your note (private, saved in this browser)</label>
+    <textarea id="note-${qIndex}" class="notes-input" rows="3" placeholder="Write a note for this question…"></textarea>
+  `;
+  const noteInput = notesWrap.querySelector("textarea");
+  noteInput.value = note;
+  noteInput.addEventListener("input", () => setNote(q.id, noteInput.value));
+
   const header = document.createElement("div");
   header.className = "question-block-header";
   header.innerHTML = `
@@ -526,10 +558,24 @@ function buildQuestionBlock(qIndex) {
     <span class="question-header-right">
       <span class="topic-badge">${escapeHtml(q.topic)}</span>
       ${done ? `<span class="done-badge">✓ Done</span>` : ""}
-      ${state.mode === "exam" ? `<button type="button" class="btn btn-flag${flagged ? " active" : ""}" data-flag>${flagged ? "🚩 Flagged" : "🚩 Flag"}</button>` : ""}
+      <span class="q-actions">
+        <button type="button" class="btn btn-icon btn-sm${isSaved(q) ? " is-on" : ""}" data-save aria-pressed="${isSaved(q)}" title="Save question" aria-label="Save question">🔖</button>
+        <button type="button" class="btn btn-icon btn-sm${note ? " is-on" : ""}" data-notes aria-expanded="false" title="Notes" aria-label="Notes">📝</button>
+        <button type="button" class="btn btn-icon btn-sm" data-copy-link title="Copy link to this question" aria-label="Copy link to this question">🔗</button>
+        ${state.mode === "exam" ? `<button type="button" class="btn btn-icon btn-sm btn-flag${flagged ? " active" : ""}" data-flag aria-pressed="${flagged}" title="Mark for review" aria-label="Mark for review">🚩</button>` : ""}
+      </span>
     </span>
   `;
   block.appendChild(header);
+
+  header.querySelector("[data-save]").addEventListener("click", () => toggleSave(qIndex));
+  const notesBtn = header.querySelector("[data-notes]");
+  notesBtn.addEventListener("click", () => {
+    notesWrap.hidden = !notesWrap.hidden;
+    notesBtn.setAttribute("aria-expanded", String(!notesWrap.hidden));
+    if (!notesWrap.hidden) noteInput.focus();
+  });
+  header.querySelector("[data-copy-link]").addEventListener("click", () => copyQuestionLink(q.id));
   if (state.mode === "exam") {
     header.querySelector("[data-flag]").addEventListener("click", () => toggleFlag(qIndex));
   }
@@ -590,11 +636,13 @@ function buildQuestionBlock(qIndex) {
     block.appendChild(exp);
   }
 
+  block.appendChild(notesWrap);
+
   return block;
 }
 
 export function renderQuizPage(scrollIntoView = false) {
-  const pages = totalPages(state.quizQuestions.length);
+  const pages = totalPages(state.quizQuestions.length, state.pageSize);
   state.page = clamp(state.page, 0, pages - 1);
 
   el.modeBadge.textContent =
@@ -602,8 +650,8 @@ export function renderQuizPage(scrollIntoView = false) {
   el.modeBadge.className = `mode-badge ${state.mode}`;
   el.timerChip.hidden = state.mode !== "exam";
 
-  const start = state.page * PAGE_SIZE;
-  const end = Math.min(start + PAGE_SIZE, state.quizQuestions.length);
+  const start = state.page * state.pageSize;
+  const end = Math.min(start + state.pageSize, state.quizQuestions.length);
 
   el.questionList.innerHTML = "";
   for (let i = start; i < end; i++) {
@@ -621,9 +669,9 @@ function updateProgressUI() {
   const total = state.quizQuestions.length;
   const answered = state.answers.filter((set) => set.size > 0).length;
   const flagged = state.flags.filter(Boolean).length;
-  const pages = totalPages(total);
-  const start = state.page * PAGE_SIZE + 1;
-  const end = Math.min(start + PAGE_SIZE - 1, total);
+  const pages = totalPages(total, state.pageSize);
+  const start = state.page * state.pageSize + 1;
+  const end = Math.min(start + state.pageSize - 1, total);
 
   let text = `Page ${state.page + 1} of ${pages} · Questions ${start}-${end} of ${total} · Answered ${answered}/${total}`;
   if (state.mode === "exam" && flagged) text += ` · 🚩 ${flagged} flagged`;
@@ -633,7 +681,7 @@ function updateProgressUI() {
 }
 
 function renderPagination() {
-  const pages = totalPages(state.quizQuestions.length);
+  const pages = totalPages(state.quizQuestions.length, state.pageSize);
   el.pagination.innerHTML = "";
   if (pages <= 1) return;
   const current = state.page + 1;
@@ -697,11 +745,12 @@ function buildNavigator() {
   if (total <= NAV_MAX) {
     for (let i = 0; i < total; i++) indices.push(i);
   } else {
-    const start = state.page * PAGE_SIZE;
-    const end = Math.min(start + PAGE_SIZE, total);
+    const start = state.page * state.pageSize;
+    const end = Math.min(start + state.pageSize, total);
     for (let i = start; i < end; i++) indices.push(i);
   }
   if (onlyFlagged) indices = indices.filter((i) => state.flags[i]);
+  if (state.onlySaved) indices = indices.filter((i) => isSaved(state.quizQuestions[i]));
 
   if (!indices.length) {
     el.navigatorGrid.innerHTML = `<p class="muted small">No flagged questions yet.</p>`;
@@ -715,7 +764,7 @@ function buildNavigator() {
     const classes = ["nav-chip"];
     if (state.answers[i].size > 0) classes.push("answered");
     if (state.flags[i]) classes.push("flagged");
-    if (Math.floor(i / PAGE_SIZE) === state.page) classes.push("current");
+    if (Math.floor(i / state.pageSize) === state.page) classes.push("current");
     btn.className = classes.join(" ");
     btn.textContent = String(i + 1);
     btn.title = `Question ${i + 1}${state.flags[i] ? " (flagged for review)" : ""}`;
@@ -731,11 +780,12 @@ function updateSidebarStats() {
   const flagged = state.flags.filter(Boolean).length;
   el.sidebarAnswered.textContent = `${answered} / ${total}`;
   el.sidebarFlagged.textContent = String(flagged);
+  el.sidebarSaved.textContent = String(savedCount());
   el.sidebarFill.style.width = `${total ? (answered / total) * 100 : 0}%`;
 }
 
 function gotoQuestion(index) {
-  state.page = Math.floor(index / PAGE_SIZE);
+  state.page = Math.floor(index / state.pageSize);
   renderQuizPage(false);
   const node = document.getElementById(`question-${index}`);
   if (node) node.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -778,6 +828,27 @@ function toggleFlag(qIndex) {
   updateProgressUI();
   buildNavigator();
   saveSessionSoon();
+}
+
+function toggleSave(qIndex) {
+  const q = state.quizQuestions[qIndex];
+  const nowSaved = toggleSaved(q.id);
+  toast(nowSaved ? "Saved." : "Removed from saved.");
+  const oldBlock = el.questionList.querySelector(`[data-qindex="${qIndex}"]`);
+  if (oldBlock) oldBlock.replaceWith(buildQuestionBlock(qIndex));
+  updateSidebarStats();
+  buildNavigator();
+}
+
+async function copyQuestionLink(questionId) {
+  if (!state.active) return;
+  const url = `${location.origin}${location.pathname}#q/${encodeURIComponent(state.active.meta.id)}/${encodeURIComponent(questionId)}`;
+  try {
+    await navigator.clipboard.writeText(url);
+    toast("Question link copied.", "success");
+  } catch (err) {
+    toast("Couldn't copy the link in this browser.", "error");
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -824,6 +895,22 @@ export function bindQuizToolbar() {
   });
 
   el.flagFilter.addEventListener("change", buildNavigator);
+
+  el.savedFilter.addEventListener("change", () => {
+    state.onlySaved = el.savedFilter.checked;
+    buildNavigator();
+  });
+
+  el.pageSize.addEventListener("change", () => {
+    const size = parseInt(el.pageSize.value, 10);
+    if (!Number.isFinite(size) || size < 1) return;
+    const firstIndex = state.page * state.pageSize;
+    state.pageSize = size;
+    state.page = Math.floor(firstIndex / size);
+    renderQuizPage(true);
+    saveSessionSoon();
+    storage.setSetting("pageSize", size).catch(() => {});
+  });
 
   el.btnFinishExam.addEventListener("click", () => {
     const answered = state.answers.filter((set) => set.size > 0).length;
@@ -893,6 +980,7 @@ function renderResultFilters() {
     ["incorrect", "Incorrect"],
     ["correct", "Correct"],
     ["flagged", "🚩 Flagged"],
+    ["saved", "🔖 Saved"],
   ];
   el.resultsFilter.innerHTML = "";
   filters.forEach(([value, label]) => {
@@ -921,6 +1009,7 @@ function renderResultItems() {
     if (state.filter === "correct" && !isCorrect) return;
     if (state.filter === "incorrect" && isCorrect) return;
     if (state.filter === "flagged" && !flagged) return;
+    if (state.filter === "saved" && !isSaved(q)) return;
     shown += 1;
 
     const item = document.createElement("article");
@@ -989,6 +1078,36 @@ export function handleGlobalKeydown(event) {
   if (tag === "input" || tag === "textarea" || tag === "select") return;
   if (event.key === "ArrowRight") gotoPage(state.page + 1);
   else if (event.key === "ArrowLeft") gotoPage(state.page - 1);
+}
+
+// Deep link: #q/<collectionId>/<questionId> opens that question in Study mode.
+export async function handleDeepLink() {
+  const match = location.hash.match(/^#q\/([^/]+)\/([^/]+)$/);
+  if (!match) return false;
+
+  const collectionId = decodeURIComponent(match[1]);
+  const questionId = decodeURIComponent(match[2]);
+  const record = await storage.fetchCollection(collectionId);
+  if (!record) {
+    toast("The linked collection is no longer available.", "error");
+    return false;
+  }
+
+  await startSession(collectionId, "study");
+  const index = state.quizQuestions.findIndex((q) => String(q.id) === String(questionId));
+  if (index >= 0) {
+    gotoQuestion(index);
+    toast(`Jumped to question #${questionId}.`, "success");
+  } else {
+    toast("That question was not found in this collection.", "error");
+  }
+
+  try {
+    history.replaceState(null, "", location.pathname + location.search);
+  } catch (err) {
+    /* ignore */
+  }
+  return true;
 }
 
 

@@ -11,6 +11,7 @@ import {
   bindResultsActions,
   tryResumeSession,
   handleGlobalKeydown,
+  handleDeepLink,
   refreshExamTimer,
 } from "./ui.js";
 import { registerServiceWorker } from "./pwa.js";
@@ -44,6 +45,12 @@ async function boot() {
   const savedTheme = (await storage.getSetting(THEME_KEY, "auto")) || "auto";
   applyTheme(savedTheme);
 
+  const savedPageSize = parseInt(await storage.getSetting("pageSize", 25), 10);
+  if (Number.isFinite(savedPageSize) && savedPageSize > 0) {
+    state.pageSize = savedPageSize;
+    el.pageSize.value = String(savedPageSize);
+  }
+
   bindImportPanel();
   bindEditModal();
   bindQuizToolbar();
@@ -65,9 +72,11 @@ async function boot() {
   registerServiceWorker();
 
   try {
-    await tryResumeSession();
+    // A deep link takes priority over resuming a previous session.
+    const jumped = await handleDeepLink();
+    if (!jumped) await tryResumeSession();
   } catch (err) {
-    console.error("Resume failed:", err);
+    console.error("Startup restore failed:", err);
   }
 }
 

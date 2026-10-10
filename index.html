@@ -118,6 +118,15 @@
           </div>
         </div>
         <div class="toolbar-actions">
+          <label class="per-page">
+            <span>Per page</span>
+            <select id="page-size" aria-label="Questions per page">
+              <option value="10">10</option>
+              <option value="25" selected>25</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
           <button type="button" id="btn-toggle-navigator" class="btn btn-ghost" aria-expanded="false" aria-controls="quiz-sidebar">🧭 Navigate</button>
           <button type="button" id="btn-finish-exam" class="btn btn-danger" hidden>Submit Exam</button>
         </div>
@@ -141,6 +150,10 @@
                 <span class="sidebar-stat-label">Flagged</span>
                 <span id="sidebar-flagged" class="sidebar-stat-value">0</span>
               </div>
+              <div class="sidebar-stat">
+                <span class="sidebar-stat-label">Saved</span>
+                <span id="sidebar-saved" class="sidebar-stat-value">0</span>
+              </div>
             </div>
             <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
               <div id="sidebar-fill" class="progress-fill"></div>
@@ -150,10 +163,16 @@
           <div class="card sidebar-card">
             <div class="sidebar-head">
               <h2 class="sidebar-title">Questions</h2>
-              <label class="flag-toggle" id="flag-filter-wrap" hidden>
-                <input type="checkbox" id="flag-filter" />
-                <span>Flagged only</span>
-              </label>
+              <div class="sidebar-toggles">
+                <label class="flag-toggle" id="flag-filter-wrap" hidden>
+                  <input type="checkbox" id="flag-filter" />
+                  <span>Flagged</span>
+                </label>
+                <label class="flag-toggle">
+                  <input type="checkbox" id="saved-filter" />
+                  <span>Saved</span>
+                </label>
+              </div>
             </div>
             <div id="navigator-grid" class="navigator-grid"></div>
             <p class="navigator-legend muted small">

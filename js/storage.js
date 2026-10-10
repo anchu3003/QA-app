@@ -140,10 +140,16 @@ export async function fetchCollection(id) {
     const meta = (lsRead(LS.index, []) || []).find((m) => m.id === id);
     if (!meta) return null;
     const data = lsRead(LS.data(id), { questions: [] });
-    const progress = lsRead(LS.progress(id), {});
-    return { meta, questions: data.questions || [], progress };
+    const record = lsRead(LS.progress(id), {});
+    return {
+      meta,
+      questions: data.questions || [],
+      progress: record.done || {},
+      saved: record.saved || {},
+      notes: record.notes || {},
+    };
   }
-  const [meta, data, progressRecord] = await Promise.all([
+  const [meta, data, record] = await Promise.all([
     idbGet(STORE.META, id),
     idbGet(STORE.DATA, id),
     idbGet(STORE.PROGRESS, id),
@@ -152,23 +158,25 @@ export async function fetchCollection(id) {
   return {
     meta,
     questions: (data && data.questions) || [],
-    progress: (progressRecord && progressRecord.done) || {},
+    progress: (record && record.done) || {},
+    saved: (record && record.saved) || {},
+    notes: (record && record.notes) || {},
   };
 }
 
-export async function saveCollection({ meta, questions, progress }) {
+export async function saveCollection({ meta, questions, progress, saved, notes }) {
   try {
     if (backend === "localStorage") {
       const index = lsRead(LS.index, []);
       const nextIndex = index.filter((m) => m.id !== meta.id).concat(meta);
       lsWrite(LS.data(meta.id), { questions });
-      lsWrite(LS.progress(meta.id), progress || {});
+      lsWrite(LS.progress(meta.id), { done: progress || {}, saved: saved || {}, notes: notes || {} });
       lsWrite(LS.index, nextIndex);
       return;
     }
     await idbPut(STORE.META, meta);
     await idbPut(STORE.DATA, { id: meta.id, questions });
-    await idbPut(STORE.PROGRESS, { id: meta.id, done: progress || {} });
+    await idbPut(STORE.PROGRESS, { id: meta.id, done: progress || {}, saved: saved || {}, notes: notes || {} });
   } catch (err) {
     throw toQuotaError(err);
   }
@@ -187,13 +195,15 @@ export async function updateMeta(meta) {
   }
 }
 
-export async function saveProgress(id, done) {
+// Persists the whole study record (done + saved + notes) in one write.
+export async function saveStudyState(id, { done, saved, notes }) {
+  const record = { id, done: done || {}, saved: saved || {}, notes: notes || {} };
   try {
     if (backend === "localStorage") {
-      lsWrite(LS.progress(id), done || {});
+      lsWrite(LS.progress(id), record);
       return;
     }
-    await idbPut(STORE.PROGRESS, { id, done: done || {} });
+    await idbPut(STORE.PROGRESS, record);
   } catch (err) {
     throw toQuotaError(err);
   }
@@ -241,6 +251,8 @@ export async function exportCollection(id) {
     examTimeMinutes: record.meta.examTimeMinutes,
     questions: record.questions,
     progress: record.progress,
+    saved: record.saved,
+    notes: record.notes,
   };
 }
 

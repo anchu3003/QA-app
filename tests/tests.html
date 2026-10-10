@@ -134,10 +134,11 @@
     });
 
     const s3 = suite("model pagination/topics");
-    test(s3, "totalPages uses 25 per page", () => {
+    test(s3, "totalPages supports a custom page size", () => {
       eq(totalPages(0), 1);
       eq(totalPages(25), 1);
       eq(totalPages(26), 2);
+      eq(totalPages(26, 10), 3);
     });
     test(s3, "getPaginationRange inserts ellipses", () => {
       eq(getPaginationRange(1, 10), [1, 2, 3, "...", 10]);

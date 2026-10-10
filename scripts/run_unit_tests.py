@@ -63,7 +63,7 @@ T('computeResults counts', function () {
   var r = computeResults([q, q], [new Set(['a','c']), new Set(['b'])]);
   eq(r.correctCount, 1); eq(r.total, 2); eq(r.details[1].isCorrect, false);
 });
-T('totalPages', function () { eq(totalPages(0), 1); eq(totalPages(25), 1); eq(totalPages(26), 2); });
+T('totalPages', function () { eq(totalPages(0), 1); eq(totalPages(25), 1); eq(totalPages(26), 2); eq(totalPages(26, 10), 3); });
 T('getPaginationRange', function () {
   eq(getPaginationRange(1, 10), [1,2,3,'...',10]);
   eq(getPaginationRange(5, 5), [1,2,3,4,5]);

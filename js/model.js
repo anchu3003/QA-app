@@ -92,8 +92,8 @@ export function computeResults(questions, answers) {
   return { correctCount, total: questions.length, details };
 }
 
-export function totalPages(count) {
-  return Math.max(1, Math.ceil(count / PAGE_SIZE));
+export function totalPages(count, pageSize = PAGE_SIZE) {
+  return Math.max(1, Math.ceil(count / pageSize));
 }
 
 export function getPaginationRange(current, total) {

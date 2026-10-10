@@ -687,6 +687,74 @@ h1, h2, h3, h4 { line-height: 1.25; letter-spacing: -0.01em; }
   html { scroll-behavior: auto; }
 }
 
+/* ---------- Question action buttons (save / notes / copy / flag) ---------- */
+.q-actions { display: inline-flex; align-items: center; gap: 6px; }
+.btn-sm {
+  min-width: 34px;
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 9px;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.btn-sm.is-on { border-color: var(--brand); background: var(--brand-soft); }
+.btn-sm.btn-flag.active { border-color: var(--warn); background: var(--warn-soft); color: var(--warn); }
+
+/* ---------- Notes panel ---------- */
+.notes-panel {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px dashed var(--border-strong);
+}
+.notes-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.notes-input {
+  width: 100%;
+  min-height: 78px;
+  resize: vertical;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.notes-input::placeholder { color: var(--muted); }
+.notes-input:focus { outline: none; border-color: var(--brand); box-shadow: var(--focus); }
+
+/* ---------- Toolbar widgets ---------- */
+.per-page {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+}
+.per-page select {
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+.per-page select:focus { outline: none; border-color: var(--brand); box-shadow: var(--focus); }
+
+.sidebar-toggles { display: flex; gap: 10px; flex-wrap: wrap; }
+
+
 
 
 

@@ -18,6 +18,11 @@ Deploys as plain static files to **GitHub Pages** and **Vercel**.
   **question navigator** (answered / flagged / unanswered at a glance).
 - 💾 **Saved progress** — per-question done state, page coloring and `done / total` bars; exam mode only
   marks questions you actually answered.
+- 🔖 **Saved questions** — bookmark individual questions (persisted, in every mode) and filter the sidebar
+  navigator or the results list to just your saved ones.
+- 📝 **Private notes** — attach a note to any question; stored locally and included in exports.
+- 🔗 **Deep links** — copy a link to a specific question; opening it jumps straight to that question.
+- 🔢 **Configurable page size** — show 10 / 25 / 50 / 100 questions per page.
 - ↩️ **Resume sessions** — a refresh or accidental close can be resumed (including a running exam timer).
 - 🔀 **Backup & restore** — export a collection (with progress) to JSON and import it back or on another device.
 - 🌗 **Modern UI with light / dark / auto theme**, accessible (ARIA, focus management, keyboard page nav).
@@ -103,9 +108,10 @@ Rules:
 
 ## Storage & privacy
 
-Everything (questions, settings and per-question progress) is stored locally in **IndexedDB**
-(or `localStorage` as a fallback) — nothing is uploaded anywhere. Storage is scoped to the origin, so
-data saved on `localhost` is separate from your deployed site. Use **⬇ Export** for backups.
+Everything (questions, settings, per-question progress, saved questions and notes) is stored locally in
+**IndexedDB** (or `localStorage` as a fallback) — nothing is uploaded anywhere. Storage is scoped to the
+origin, so data saved on `localhost` is separate from your deployed site. Use **⬇ Export** for backups
+(the export includes your saved list and notes).
 
 ## Project structure
 
