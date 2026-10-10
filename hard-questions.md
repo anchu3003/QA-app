@@ -1,0 +1,79 @@
+- 509 => dùng WAF, ko có khái niệm Filewall manager
+- 594 => AWS Security Hub and AWS Account Factory là 2 tính năng của Control Tower
+- 873 => same region replica có tồn tại ở S3
+- 671 vẫn là schedule
+- 1011 set budget ở đâu? trong billing dashboard
+- 351 => khái niệm về OAI
+- 348 PatchLoadBalanacerInstance 
+- 429 Cache-Control max-age directive of 24 hours 
+- 485 same region, point route 53 to API gateway
+- 723 AWS Network Firewall
+- 527 Amazon CloudWatch Container Insights
+- 242 tag policy 
+- 306 Role inside ECS task
+- 260 Generate a presigned URL
+
+
+- 9 App Flow AWS service <-> SaaS applications
+- 10 Amazon S3 Access Points are intended for shared S3 datasets and let you create a separate access endpoint
+- 21 Lambda@Edge is the only listed CloudFront feature that can execute custom logic at edge locations to transform requests or responses
+- 22 expiring only current objects does not remove noncurrent versions, so older object versions can continue to accumulate and increase storage usage.
+- 33 VPC Flow Logs capture IP traffic information for network interfaces in a VPC
+- 37 AWS Lake Formation provides native data filters (row-level security, cell-level security)
+- 38 An AWS member account can belong to only one organization at a time. To move the existing R&D account to the new organization, the account must first leave or be removed from the original organization, and then the new management account can invite it to join the new organization.
+- 43 An EC2 Auto Scaling group with a target tracking scaling policy based on ASGAverageCPUUtilization automatically adjusts capacity to keep average CPU near the configured target
+- 47 Control Tower & AWS Organizations, both can also enforce organization-wide guardrails (lá chắn bảo vệ, đặt rule, quy định)
+- 48 Amazon ElastiCache for Redis is designed for real-time leaderboards by using sorted sets, which automatically maintain unique members in score order and support efficient top-N and rank queries as scores change.
+- 50 Amazon Data Lifecycle Manager to create and manage the snapshots
+- 52 An Aurora custom endpoint can be associated with a selected subset of DB instances
+- 53 S3 presigned URLs suport both upload & download
+- 55 Amazon Textract can extract text from PDF documents, Amazon Comprehend is the AWS managed natural language processing service that can analyze document text for sentiment and other content insights such as entities and key phrases. SageMaker train ML modals
+- 58 Amazon RDS automated backups are limited to a maximum retention period of 35 days
+- 60 "Amazon DynamoDB Export" to Amazon S3 directly. It uses point-in-time recovery (PITR) backups as the export source, so PITR must be enabled on the table.
+- 62 CloudFront can cache separate versions of the same content for different device types
+- 74 **The Amazon VPC CNI plugin** for Kubernetes supports custom networking for Amazon EKS.
+- 79 **Amazon Aurora Serverless v2** automatically scales compute capacity up and down based on demand, unit is ACUs - Aurora capacity unit
+- 86 **Amazon ECS Anywhere** provides the EXTERNAL launch type =>kết nối vs on premise server hoặc VM
+- 92 **Babelfish for Aurora PostgreSQL** provides SQL Server–compatible endpoints and supports T-SQL
+- 102 **Amazon S3 Requester Pays** charges the requester, người truy cập trả tiền đường truyền
+- 112 **Amazon Rekognition** nhận diện hình ảnh nhạy, bạo lực, không mong muốn
+- 123 **AWS Transfer Family** is the AWS service that supports the AS2 protocol, FTP, SFTP
+- 126 **Amazon EC2 Dedicated Hosts** are the correct platform for software licensed by socket or core
+- 139 Amazon RDS Proxy is designed to help serverless applications such as AWS Lambda avoid exhausting database connections
+- 164 AWS Glue is a fully managed ETL service for data in Amazon S3 and natively supports reading CSV and writing Parquet. A Glue crawler can discover the source schema, and a Glue ETL job can perform the conversion and write the output directly to the transformed S3 bucket.
+- 170 Amazon API Gateway usage plans paired with API keys let specific resources or methods
+- 182 Amazon Pinpoint is the AWS service built for targeted communications to mobile app users and supports SMS campaigns and journeys
+- 216 Điều kiện để 2 VPC peering được là CIDR của chúng ko overlap với nhau, An IPv4 CIDR block for an Amazon VPC must be between *.*.*.*/16 and *.*.*.*/28
+- 218 Amazon S3 Storage Lens is the AWS feature that provides cross-Region visibility into S3 bucket configuration and data-protection metrics, including versioning status.
+- 227 AWS Lambda function URLs provide a dedicated HTTPS endpoint directly for a Lambda function, and they support AWS_IAM as the authentication type.
+- 232 AWS CloudTrail is the correct service because it logs AWS API activity and records who made a request, when it was made, and other event details.
+- 238 AWS Systems Manager Run Command is the best fit because it can run a custom shell command or script across a fleet of managed EC2 instances at scale
+- 256 AWS Site-to-Site VPN is the correct choice because it provides an IPsec-encrypted connection between an on-premises network and AWS, can be created quickly, and is typically more cost-effective than AWS Direct Connect for low-bandwidth, low-traffic connectivity.
+- 261 An AWS Outposts rack extends AWS-managed infrastructure and services into the company’s own data center, allowing workloads and storage to remain on premises while using Amazon EKS and other AWS managed services. Local Zones are extensions of an AWS Region rather than equipment installed.
+- 289 Amazon VPC Lattice is the AWS-managed application networking service designed for service-to-service connectivity, security, and discovery across multiple VPCs and AWS accounts. 
+- 314 Amazon RDS Blue/Green Deployments
+- 328 AWS Trusted Advisor can be integrated with AWS Organizations so the management account can view aggregated check results for accounts in the organization,
+- 341 cert cho CloudFront luôn phải xuất phát từ us-east-1
+- 348 The AWS EC2-PatchLoadBalancerInstance Automation runbook removes an EC2 instance from its load balancer or target group, waits for connection draining, patches it with AWS-RunPatchBaseline, and reattaches it.
+- 360 Amazon EKS Connector is built to register and connect external Kubernetes clusters
+- 451 IAM Roles Anywhere enables workloads that run outside AWS, including on-premises virtual machines, to authenticate with X.509 certificates and receive temporary credentials for an IAM role.
+- 452 Amazon RDS Custom for Oracle is the best fit because it supports Oracle Database Enterprise Edition with the BYOL licensing model
+- 462 Amazon Transcribe is the AWS service designed to transcribe audio files into text
+- 486 AWS Database Migration Service supports migrations that keep the source database online by using a replication instance to perform the migration and an ongoing replication task
+- 519 AWS Network Firewall can be placed on the private subnet’s outbound path by updating routing so egress traffic is inspected before reaching the internet.
+- 545 IAM Roles for Service Accounts (IRSA) enables least-privilege AWS access per Kubernetes service account
+- 546 AWS Resource Groups Tag Editor is the fastest fit because it is built to find AWS resources by tag key and value across multiple Regions and across supported resource types.
+- 617 The aws:PrincipalOrgID global condition key is designed for resource-based policies such as Amazon S3 bucket policies and lets the bucket allow access only when the requesting principal belongs to the specified AWS Organization.
+- 628 Amazon Recycle Bin can retain deleted EBS-backed AMIs according to a retention rule and allows them to be restored directly before the retention period expires.
+- 630 Amazon EMR runtime roles provide workload-level IAM permissions
+- 637 Amazon Security Lake is a fully managed, purpose-built security data lake service that automatically centralizes security data from AWS environments and other sources into an S3-backed data lake.
+- 654 AWS Systems Manager Session Manager is the correct choice because it provides secure remote administration of EC2 instances
+- 676 Amazon EBS Fast Snapshot Restore is the feature designed to minimize startup latency for EBS-backed AMIs. => giúp AMI start up nhanh hơn
+- 753 Amazon Neptune is a fully managed graph database built for highly connected datasets and supports SPARQL for querying RDF graph data.
+- 778 AWS Security Hub is the AWS service for centralized cloud security posture management across AWS accounts. 
+- 851 AWS Lambda SnapStart is the best fit because it is supported for Java 11 and is specifically intended to reduce function startup latency by minimizing initialization time
+- 911 Amazon DynamoDB Time to Live (TTL) is the native, cost-effective way to remove items that are no longer needed.
+- 927 For IPv6 workloads in Amazon VPC, an egress-only internet gateway provides outbound internet access while preventing unsolicited inbound connections from the internet. 
+- 935 Amazon DynamoDB point-in-time recovery (PITR) can restore lastest 5min data
+- 964 Amazon Redshift is a datawarehouse provide massively parallel processing (MPP) capabilities, serverless
+- 1004 Amazon Quantum Ledger Database (QLDB) is a fully managed ledger database designed to maintain immutable, cryptographically verifiable transaction logs of all data changes

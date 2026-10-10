@@ -1,0 +1,219 @@
+[
+  {
+    "sim": 1.0,
+    "id1": 218,
+    "q1": "A global company runs its workloads on AWS. The company's application uses Amazon S3 buckets across ",
+    "id2": 623,
+    "q2": "A global company runs its workloads on AWS. The company's application uses Amazon S3 buckets across "
+  },
+  {
+    "sim": 0.697,
+    "id1": 253,
+    "q1": "A company runs its application in the AWS Cloud. The application uses Amazon EC2 instances behind an",
+    "id2": 337,
+    "q2": "A company hosts its application in the AWS Cloud. The application runs on Amazon EC2 instances in an"
+  },
+  {
+    "sim": 0.686,
+    "id1": 65,
+    "q1": "A company plans to move its data to an Amazon S3 bucket. The data must be encrypted while stored in ",
+    "id2": 307,
+    "q2": "A company plans to migrate data to an Amazon S3 bucket. The data must be encrypted at rest in the S3"
+  },
+  {
+    "sim": 0.674,
+    "id1": 186,
+    "q1": "A company has engaged an external vendor to perform work in the company’s AWS account. The vendor us",
+    "id2": 445,
+    "q2": "A company has hired an external vendor to perform work in the company’s AWS account. The vendor uses"
+  },
+  {
+    "sim": 0.667,
+    "id1": 204,
+    "q1": "A company uses high block storage capacity to run its workloads on premises. The company's daily pea",
+    "id2": 479,
+    "q2": "An ecommerce company runs a PostgreSQL database on premises. The database stores data by using high-"
+  },
+  {
+    "sim": 0.637,
+    "id1": 372,
+    "q1": "A company is deploying a shared storage solution for a media application hosted in the AWS Cloud. Th",
+    "id2": 691,
+    "q2": "A company is deploying a shared storage solution for a media application that it hosts on AWS. The c"
+  },
+  {
+    "sim": 0.63,
+    "id1": 320,
+    "q1": "A company uses Amazon S3 to host its static website. The company wants to add a contact form to the ",
+    "id2": 985,
+    "q2": "A company hosts its static website by using Amazon S3. The company wants to add a contact form to it"
+  },
+  {
+    "sim": 0.585,
+    "id1": 562,
+    "q1": "A company is migrating applications from a self-managed, on-premises Microsoft Active Directory to A",
+    "id2": 881,
+    "q2": "A company is moving applications to AWS. The applications are deployed in different accounts. The co"
+  },
+  {
+    "sim": 0.524,
+    "id1": 202,
+    "q1": "A company has a custom application containing embedded credentials that retrieves information from a",
+    "id2": 880,
+    "q2": "A company has a custom application that contains embedded credentials and retrieves information from"
+  },
+  {
+    "sim": 0.506,
+    "id1": 220,
+    "q1": "A company runs a website analytics application on a single Amazon EC2 On-Demand Instance. The analyt",
+    "id2": 737,
+    "q2": "A company hosts a website analytics application on a single Amazon EC2 On-Demand Instance. The analy"
+  },
+  {
+    "sim": 0.463,
+    "id1": 281,
+    "q1": "A company is building an Amazon Elastic Kubernetes Service (Amazon EKS) cluster for its workloads. A",
+    "id2": 631,
+    "q2": "A company uses Amazon Elastic Kubernetes Service (Amazon EKS) to run a container application. The EK"
+  },
+  {
+    "sim": 0.458,
+    "id1": 581,
+    "q1": "A company runs a food delivery service. Due to recent growth, its order-processing system is encount",
+    "id2": 608,
+    "q2": "A company provides a food delivery service that is expanding quickly. Because of this growth, the co"
+  },
+  {
+    "sim": 0.442,
+    "id1": 102,
+    "q1": "A consumer-survey company has collected data for several years from a particular geographic region. ",
+    "id2": 779,
+    "q2": "A survey company has collected data for several years from regions in the United States. The company"
+  },
+  {
+    "sim": 0.43,
+    "id1": 853,
+    "q1": "A company has a data ingestion workflow that consists of the following:\n\nThe company notices that th",
+    "id2": 910,
+    "q2": "A company has a data ingestion workflow that includes the following components:\n\nThe ingestion workf"
+  },
+  {
+    "sim": 0.417,
+    "id1": 213,
+    "q1": "A solutions architect is designing a two-tier architecture that includes a public subnet and a datab",
+    "id2": 926,
+    "q2": "A company plans to deploy a new public web application on AWS. The application includes a web server"
+  },
+  {
+    "sim": 0.403,
+    "id1": 5,
+    "q1": "A company runs a global web application on Amazon EC2 instances behind an Application Load Balancer.",
+    "id2": 775,
+    "q2": "A company operates a web application on Amazon EC2 instances in an Auto Scaling group behind an Appl"
+  },
+  {
+    "sim": 0.398,
+    "id1": 66,
+    "q1": "A company has multiple AWS accounts that use consolidated billing. The company runs several active, ",
+    "id2": 328,
+    "q2": "A company runs several Amazon RDS for Oracle On-Demand DB instances that have high utilization. The "
+  },
+  {
+    "sim": 0.375,
+    "id1": 301,
+    "q1": "A company runs an SMB file server in its data center. The file server contains large files that are ",
+    "id2": 709,
+    "q2": "A company operates an SMB file server in its data center. The file server stores large files that th"
+  },
+  {
+    "sim": 0.374,
+    "id1": 158,
+    "q1": "A company runs a highly sensitive application on Amazon EC2 that is backed by an Amazon RDS database",
+    "id2": 845,
+    "q2": "A company runs Amazon EC2 instances and stores data on Amazon Elastic Block Store (Amazon EBS) volum"
+  },
+  {
+    "sim": 0.372,
+    "id1": 164,
+    "q1": "A company's reporting system delivers hundreds of `.csv` files to an Amazon S3 bucket each day. The ",
+    "id2": 689,
+    "q2": "A company has an application that uploads hundreds of `.csv` files to an Amazon S3 bucket every hour"
+  },
+  {
+    "sim": 0.367,
+    "id1": 177,
+    "q1": "A solutions architect is designing a two-tier web application. The application includes:\n\nSecurity i",
+    "id2": 1018,
+    "q2": "A solutions architect is designing a three-tier web application. The architecture includes:\n\nSecurit"
+  },
+  {
+    "sim": 0.361,
+    "id1": 211,
+    "q1": "A company needs to optimize the cost of its Amazon EC2 instances. The company also needs to change t",
+    "id2": 732,
+    "q2": "A company is moving its databases to Amazon RDS for PostgreSQL and its applications to Amazon EC2 in"
+  },
+  {
+    "sim": 0.359,
+    "id1": 1,
+    "q1": "A company runs a website on Amazon EC2 instances behind an Application Load Balancer (ALB). The webs",
+    "id2": 358,
+    "q2": "A company hosts a website on Amazon EC2 instances behind an Application Load Balancer (ALB). The web"
+  },
+  {
+    "sim": 0.357,
+    "id1": 422,
+    "q1": "A company uses AWS Organizations. A member account has purchased a Compute Savings Plan. Because of ",
+    "id2": 762,
+    "q2": "A company runs Amazon EC2 instances in multiple AWS accounts that are billed separately. The company"
+  },
+  {
+    "sim": 0.357,
+    "id1": 789,
+    "q1": "A solutions architect must ensure that API calls to Amazon DynamoDB from Amazon EC2 instances in a V",
+    "id2": 795,
+    "q2": "A company hosts a web application on multiple Amazon EC2 instances in a VPC. The application must wr"
+  },
+  {
+    "sim": 0.356,
+    "id1": 434,
+    "q1": "A company runs an application by using Amazon EC2 instances and AWS Lambda functions. The EC2 instan",
+    "id2": 957,
+    "q2": "A company uses Amazon EC2 instances and AWS Lambda functions to run its application. The company has"
+  },
+  {
+    "sim": 0.356,
+    "id1": 738,
+    "q1": "A company operates an internal application on Amazon EC2 instances in an Auto Scaling group. The EC2",
+    "id2": 800,
+    "q2": "A company runs its production workload on Amazon EC2 instances with Amazon Elastic Block Store (Amaz"
+  },
+  {
+    "sim": 0.351,
+    "id1": 262,
+    "q1": "A company runs a business-critical web application on Amazon EC2 instances behind an Application Loa",
+    "id2": 834,
+    "q2": "A company runs a critical business application on Amazon EC2 instances behind an Application Load Ba"
+  },
+  {
+    "sim": 0.35,
+    "id1": 76,
+    "q1": "A company has an application that generates a large number of files, each approximately 5 MB in size",
+    "id2": 860,
+    "q2": "A company needs to reduce its Amazon S3 storage costs for an application that creates many files tha"
+  },
+  {
+    "sim": 0.348,
+    "id1": 177,
+    "q1": "A solutions architect is designing a two-tier web application. The application includes:\n\nSecurity i",
+    "id2": 926,
+    "q2": "A company plans to deploy a new public web application on AWS. The application includes a web server"
+  },
+  {
+    "sim": 0.338,
+    "id1": 215,
+    "q1": "A company uses Amazon API Gateway to manage its REST APIs that third-party service providers access.",
+    "id2": 951,
+    "q2": "A global company uses Amazon API Gateway to design REST APIs for its loyalty club users in the `us-e"
+  }
+]

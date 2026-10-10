@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quiz Practice — Unit tests</title>
+<style>
+  body { font-family: system-ui, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: #0e1016; color: #e8eaf1; }
+  h1 { margin-top: 0; }
+  .suite { margin: 18px 0; }
+  .suite h2 { font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.06em; color: #9aa3b2; }
+  .case { padding: 8px 12px; border-radius: 8px; margin: 6px 0; border: 1px solid #2a2f3c; background: #171a23; }
+  .pass { border-color: #16a34a; }
+  .fail { border-color: #dc2626; background: #2a1417; }
+  .badge { font-weight: 700; margin-right: 8px; }
+  .pass .badge { color: #4ade80; }
+  .fail .badge { color: #f87171; }
+  pre { margin: 6px 0 0; color: #f87171; white-space: pre-wrap; font-size: 0.85rem; }
+  #summary { font-size: 1.1rem; font-weight: 700; padding: 12px 16px; border-radius: 10px; margin-bottom: 10px; }
+  .ok { background: #0f2a18; border: 1px solid #16a34a; color: #4ade80; }
+  .bad { background: #2a1417; border: 1px solid #dc2626; color: #f87171; }
+  a { color: #8f8ff2; }
+</style>
+</head>
+<body>
+  <h1>Quiz Practice — unit tests</h1>
+  <p><a href="../index.html">← Back to app</a></p>
+  <div id="summary"></div>
+  <div id="results"></div>
+
+  <script type="module">
+    import {
+      validateAndNormalize,
+      isCorrectSelection,
+      computeResults,
+      getPaginationRange,
+      totalPages,
+      groupByTopic,
+    } from "../js/model.js";
+    import { formatText, escapeHtml, safeUrl, shuffle, formatDuration, clamp } from "../js/utils.js";
+
+    const resultsEl = document.getElementById("results");
+    const summaryEl = document.getElementById("summary");
+    let passed = 0;
+    let failed = 0;
+
+    function suite(name) {
+      const section = document.createElement("section");
+      section.className = "suite";
+      section.innerHTML = `<h2>${name}</h2>`;
+      resultsEl.appendChild(section);
+      return section;
+    }
+
+    function test(parent, name, fn) {
+      const node = document.createElement("div");
+      try {
+        fn();
+        passed += 1;
+        node.className = "case pass";
+        node.innerHTML = `<span class="badge">PASS</span>${name}`;
+      } catch (err) {
+        failed += 1;
+        node.className = "case fail";
+        node.innerHTML = `<span class="badge">FAIL</span>${name}<pre>${err.message}</pre>`;
+      }
+      parent.appendChild(node);
+    }
+
+    function eq(actual, expected, label = "") {
+      const a = JSON.stringify(actual);
+      const b = JSON.stringify(expected);
+      if (a !== b) throw new Error(`${label} expected ${b}, got ${a}`);
+    }
+    function ok(value, label = "value") {
+      if (!value) throw new Error(`${label} was falsy`);
+    }
+
+    // ---------------------------------------------------------------------
+    const s1 = suite("model.validateAndNormalize");
+    test(s1, "accepts a valid single-answer question", () => {
+      const { questions, errors } = validateAndNormalize([
+        { question: "Q?", options: { a: "A", b: "B" }, answer: "a", topic: "T", explanation: "E", id: 7 },
+      ]);
+      eq(errors.length, 0);
+      eq(questions.length, 1);
+      eq(questions[0].id, "7");
+      eq(questions[0].isMulti, false);
+      eq(questions[0].correctKeys, ["a"]);
+      eq(questions[0].topic, "T");
+    });
+    test(s1, "collects every bad row instead of throwing", () => {
+      const { questions, errors } = validateAndNormalize([
+        { question: "ok", options: { a: 1, b: 2 }, answer: "a" },
+        { question: "", options: { a: 1, b: 2 }, answer: "a" },
+        { question: "no options" },
+      ]);
+      eq(questions.length, 1);
+      eq(errors.length, 2);
+    });
+    test(s1, "matches answer keys case-insensitively", () => {
+      const { questions } = validateAndNormalize([{ question: "q", options: { A: "x", B: "y" }, answer: "a" }]);
+      eq(questions[0].correctKeys, ["A"]);
+    });
+    test(s1, "supports multi-answer arrays", () => {
+      const { questions } = validateAndNormalize([
+        { question: "q", options: { a: 1, b: 2, c: 3 }, answer: ["a", "c"] },
+      ]);
+      eq(questions[0].isMulti, true);
+      eq(questions[0].correctKeys, ["a", "c"]);
+    });
+    test(s1, "de-duplicates colliding ids", () => {
+      const { questions } = validateAndNormalize([
+        { question: "q1", options: { a: 1, b: 2 }, answer: "a", id: 5 },
+        { question: "q2", options: { a: 1, b: 2 }, answer: "a", id: 5 },
+      ]);
+      eq(questions[0].id === questions[1].id, false);
+    });
+    test(s1, "reports a non-array root", () => {
+      const { errors } = validateAndNormalize({ nope: true });
+      eq(errors.length, 1);
+    });
+
+    const s2 = suite("model scoring");
+    const multiQ = { correctKeys: ["a", "c"], isMulti: true };
+    test(s2, "exact multi-answer match is correct", () => ok(isCorrectSelection(multiQ, new Set(["a", "c"]))));
+    test(s2, "partial match is incorrect", () => ok(!isCorrectSelection(multiQ, new Set(["a"]))));
+    test(s2, "extra selection is incorrect", () => ok(!isCorrectSelection(multiQ, new Set(["a", "c", "d"]))));
+    test(s2, "computeResults counts correct answers", () => {
+      const r = computeResults([multiQ, multiQ], [new Set(["a", "c"]), new Set(["b"])]);
+      eq(r.correctCount, 1);
+      eq(r.total, 2);
+      eq(r.details[1].isCorrect, false);
+    });
+
+    const s3 = suite("model pagination/topics");
+    test(s3, "totalPages uses 25 per page", () => {
+      eq(totalPages(0), 1);
+      eq(totalPages(25), 1);
+      eq(totalPages(26), 2);
+    });
+    test(s3, "getPaginationRange inserts ellipses", () => {
+      eq(getPaginationRange(1, 10), [1, 2, 3, "...", 10]);
+      eq(getPaginationRange(5, 5), [1, 2, 3, 4, 5]);
+    });
+    test(s3, "groupByTopic sorts and counts progress", () => {
+      const groups = groupByTopic(
+        [{ topic: "B", id: 1 }, { topic: "A", id: 2 }, { topic: "A", id: 3 }],
+        { 3: true }
+      );
+      eq(groups[0].topic, "A");
+      eq(groups[0].total, 2);
+      eq(groups[0].done, 1);
+    });
+
+    const s4 = suite("utils.formatText");
+    test(s4, "renders bold", () => ok(formatText("**hi**").includes("<strong>hi</strong>")));
+    test(s4, "renders inline code", () => ok(formatText("use `code`").includes("<code>code</code>")));
+    test(s4, "renders markdown images (Sprint 1 fix)", () =>
+      ok(formatText("![alt](https://x.io/a.png)").includes("<img")));
+    test(s4, "renders http links", () =>
+      ok(formatText("[site](https://example.com)").includes('href="https://example.com"')));
+    test(s4, "blocks javascript: URLs", () => ok(!formatText("[x](javascript:alert(1))").includes("javascript:")));
+    test(s4, "renders bullet lists", () => ok(formatText("- one\n- two").includes("<ul><li>one</li><li>two</li></ul>")));
+    test(s4, "escapes HTML tags", () => ok(formatText("<b>x</b>").includes("&lt;b&gt;x&lt;/b&gt;")));
+
+    const s5 = suite("utils helpers");
+    test(s5, "escapeHtml escapes quotes", () => eq(escapeHtml("\"'&<>"), "&quot;&#39;&amp;&lt;&gt;"));
+    test(s5, "safeUrl allows http(s) only", () => {
+      eq(safeUrl("https://a.io/b.png"), "https://a.io/b.png");
+      eq(safeUrl("javascript:alert(1)"), "");
+      eq(safeUrl("data:text/html,x"), "");
+    });
+    test(s5, "shuffle preserves contents and input", () => {
+      const arr = [1, 2, 3, 4, 5];
+      const out = shuffle(arr);
+      eq(out.length, arr.length);
+      eq(out.slice().sort(), arr.slice().sort());
+      eq(arr, [1, 2, 3, 4, 5]);
+    });
+    test(s5, "formatDuration pads seconds", () => {
+      eq(formatDuration(65000), "1:05");
+      eq(formatDuration(3600000), "1:00:00");
+    });
+    test(s5, "clamp", () => {
+      eq(clamp(9, 0, 5), 5);
+      eq(clamp(-2, 0, 5), 0);
+    });
+
+    summaryEl.className = failed ? "bad" : "ok";
+    summaryEl.textContent = failed ? `${failed} failed · ${passed} passed` : `All ${passed} tests passed ✅`;
+  </script>
+</body>
+</html>
+
+

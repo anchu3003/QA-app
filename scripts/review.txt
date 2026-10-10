@@ -1,0 +1,325 @@
+=== ID 1 ===
+Q: A company runs a website on Amazon EC2 instances behind an Application Load Balancer (ALB). The website delivers static content. Traffic to the website is increasing. The company wants to reduce the website hosting costs as much as possible.
+
+Which solution will meet these requirements?
+ANSWER: a:Move the website to an Amazon S3 bucket. Configure an Amazon CloudFront distribution for the S3 bucket.
+EXPL: For a website that serves only static content, Amazon S3 is the appropriate origin because it can host static assets without running web servers, and Amazon CloudFront can cache and distribute that content globally at scale. This removes the ongoing cost of EC2 instances and the ALB while still supp
+
+=== ID 358 ===
+Q: A company hosts a website on Amazon EC2 instances behind an Application Load Balancer (ALB). The website serves static content. Website traffic is increasing, and the company is concerned about a possible rise in cost.
+ANSWER: a:Create an Amazon CloudFront distribution to cache state files at edge locations
+EXPL: Amazon CloudFront is designed to cache static web content at AWS edge locations, so repeated requests can be served from the cache instead of reaching the Application Load Balancer and Amazon EC2 instances. That reduces load on the origin infrastructure and can lower overall cost for a growing stati
+
+=== ID 5 ===
+Q: A company runs a global web application on Amazon EC2 instances behind an Application Load Balancer. The application stores data in Amazon Aurora.
+
+The company must create a disaster recovery solution and can tolerate up to **30 minutes** of downtime and possible data loss. The solution does **not** need to handle the load while the primary infrastructure is healthy.
+
+What should a solutions architect do to meet these requirements?
+ANSWER: a:Deploy the application with the required infrastructure elements in place. Use Amazon Route 53 to configure active-passive failover. Create an Aurora Replica in a second AWS Region.
+EXPL: An active-passive disaster recovery design is the best fit because the secondary Region does not need to serve traffic during normal operations. Amazon Route 53 failover routing supports active-passive failover, and an Aurora cross-Region replica provides a ready secondary database that can be promo
+
+=== ID 775 ===
+Q: A company operates a web application on Amazon EC2 instances in an Auto Scaling group behind an Application Load Balancer (ALB). The application stores its data in an Amazon Aurora MySQL DB cluster.
+
+The company must create a disaster recovery (DR) solution. The acceptable recovery time for the DR solution is up to 30 minutes. The DR solution does not need to support customer use while the primary infrastructure is healthy.
+
+Which solution meets these requirements?
+ANSWER: a:Deploy the DR infrastructure in a second AWS Region with an ALB and an Auto Scaling group. Set the desired capacity and maximum capacity of the Auto Scaling group to a minimum value. Convert the Aurora MySQL DB cluster to an Aurora global database. Configure Amazon Route 53 for an active-passive failover with ALB endpoints.
+EXPL: A warm standby application stack in a second Region, with minimal Auto Scaling capacity, can be activated after a disaster without serving customers during normal primary operation. Amazon Route 53 active-passive failover directs traffic to the secondary ALB only when the primary is unavailable. Aur
+
+=== ID 66 ===
+Q: A company has multiple AWS accounts that use consolidated billing. The company runs several active, high-performance Amazon RDS for Oracle On-Demand DB instances for 90 days. The company’s finance team has access to AWS Trusted Advisor in the consolidated billing account and in all other AWS accounts.
+
+The finance team needs to use the correct AWS account to access the Trusted Advisor check recommendations for RDS. The team must review the appropriate Trusted Advisor check to reduce RDS costs.
+
+Which combination of steps should the finance team take to meet these requirements?
+ANSWER: a:Use the Trusted Advisor recommendations from the account where the RDS instances are running.; c:Review the Trusted Advisor check for Amazon RDS Reserved Instance Optimization.
+EXPL: AWS Trusted Advisor recommendations for service resources are generally viewed in the account that owns and runs those resources, so the finance team should use the account where the Amazon RDS instances are running. To reduce cost for active Amazon RDS for Oracle On-Demand DB instances that have be
+
+=== ID 328 ===
+Q: A company runs several Amazon RDS for Oracle On-Demand DB instances that have high utilization. The RDS DB instances run in member accounts that are in an organization in AWS Organizations.
+
+The company's finance team has access to the organization's management account and member accounts. The finance team wants to find ways to optimize costs by using AWS Trusted Advisor.
+
+Which combination of steps will meet these requirements?
+ANSWER: a:Use the Trusted Advisor recommendations in the management account.; c:Review the Trusted Advisor checks for Amazon RDS Reserved Instance Optimization.
+EXPL: AWS Trusted Advisor can be integrated with AWS Organizations so the management account can view aggregated check results for accounts in the organization, which makes the management account the appropriate place to review organization-wide recommendations. For heavily used Amazon RDS On-Demand DB in
+
+=== ID 76 ===
+Q: A company has an application that generates a large number of files, each approximately 5 MB in size. The files are stored in Amazon S3.
+
+Company policy requires that the files be retained for 4 years before they can be deleted. Immediate accessibility is always required because the files contain critical business data that is not easy to reproduce. The files are accessed frequently during the first 30 days after object creation, but are rarely accessed after the first 30 days.
+
+Which storage solution is **MOST cost-effective**?
+ANSWER: c:Create an S3 bucket lifecycle policy to move files from S3 Standard to S3 Standard-Infrequent Access (S3 Standard-IA) 30 days from object creation. Delete the files 4 years after object creation.
+EXPL: Amazon S3 Standard-IA is the best fit for data that becomes infrequently accessed after 30 days but still must remain available with millisecond access. It also preserves multi-Availability Zone resiliency, which is appropriate for critical data that is not easy to recreate. S3 One Zone-IA is cheape
+
+=== ID 860 ===
+Q: A company needs to reduce its Amazon S3 storage costs for an application that creates many files that cannot be recreated. Each file is about 5 MB and is stored in Amazon S3 Standard storage.
+
+The company must retain the files for 4 years before they can be deleted. The files must be immediately accessible. The files are accessed frequently during the first 30 days after object creation, but they are rarely accessed after the first 30 days.
+
+Which solution will meet these requirements in the **MOST** cost-effective way?
+ANSWER: a:Create an S3 Lifecycle policy to move the files to S3 Glacier Instant Retrieval 30 days after object creation. Delete the files 4 years after object creation.
+EXPL: S3 Glacier Instant Retrieval is the best fit because it provides millisecond, immediate access for long-lived data that is rarely accessed, and AWS documents that it has lower storage cost than S3 Standard-IA for this type of access pattern. S3 Standard-IA also provides immediate access, but it is t
+
+=== ID 158 ===
+Q: A company runs a highly sensitive application on Amazon EC2 that is backed by an Amazon RDS database. Compliance requirements require that all personally identifiable information (PII) be encrypted at rest.
+
+Which solution should a solutions architect recommend to satisfy this requirement with the **LEAST** amount of infrastructure changes?
+ANSWER: d:Configure Amazon Elastic Block Store (Amazon EBS) encryption and Amazon RDS encryption with AWS Key Management Service (AWS KMS) keys to encrypt instance and database volumes.
+EXPL: The built-in AWS features for encrypting data at rest in this architecture are Amazon EBS encryption for the EC2 instance volumes and Amazon RDS encryption for the database storage, both using AWS KMS keys. This meets the compliance requirement for at-rest encryption while minimizing architectural c
+
+=== ID 845 ===
+Q: A company runs Amazon EC2 instances and stores data on Amazon Elastic Block Store (Amazon EBS) volumes. The company must ensure that all data at rest is encrypted by using AWS Key Management Service (AWS KMS). The company must also be able to control rotation of the encryption keys.
+
+Which solution meets these requirements with the **LEAST** operational overhead?
+ANSWER: a:Create a customer managed key. Use the key to encrypt the EBS volumes.
+EXPL: Amazon EBS can use a customer managed AWS KMS key for volume encryption, and customer managed symmetric KMS keys let the customer control key rotation settings. AWS managed keys rotate automatically but their rotation is not customer-configurable, and AWS owned keys do not provide customer control. 
+
+=== ID 164 ===
+Q: A company's reporting system delivers hundreds of `.csv` files to an Amazon S3 bucket each day. The company needs to convert these files to Apache Parquet format and store the results in a transformed data bucket.
+
+Which solution will satisfy these requirements with the **LEAST** development effort?
+ANSWER: b:Create an AWS Glue crawler to discover the data. Create an AWS Glue extract, transform, and load (ETL) job to transform the data. Specify the transformed data bucket in the output step.
+EXPL: AWS Glue is a fully managed ETL service for data in Amazon S3 and natively supports reading CSV and writing Parquet. A Glue crawler can discover the source schema, and a Glue ETL job can perform the conversion and write the output directly to the transformed S3 bucket. This meets the requirement wit
+
+=== ID 689 ===
+Q: A company has an application that uploads hundreds of `.csv` files to an Amazon S3 bucket every hour. The files are 1 GB in size. Whenever a file is uploaded, the company must convert that file to Apache Parquet format and place the resulting output file into an S3 bucket.
+
+Which solution will meet these requirements with the **LEAST operational overhead**?
+ANSWER: d:Create an AWS Glue extract, transform, and load (ETL) job to convert the .csv files to Parquet format and place the output files into an S3 bucket. Create an AWS Lambda function for each S3 PUT event to invoke the ETL job.
+EXPL: AWS Glue ETL is the best fit because it is a fully managed ETL service built for transforming data in Amazon S3, with native support for reading CSV and writing Parquet. A Glue ETL job can be invoked when an S3 object is created, which satisfies the per-upload processing requirement while avoiding t
+
+=== ID 177 ===
+Q: A solutions architect is designing a two-tier web application. The application includes:
+
+Security is a high priority for the company.
+
+How should the security groups be configured in this scenario?
+ANSWER: a:Configure the security group for the web tier to allow inbound traffic on port 443 from 0.0.0.0/0.; c:Configure the security group for the database tier to allow inbound traffic on port 1433 from the security group for the web tier.
+EXPL: A public web tier should permit inbound HTTPS traffic on TCP port 443 from the internet, and the SQL Server tier should permit inbound TCP port 1433 only from the web tier’s security group. AWS documentation shows HTTPS web servers commonly allow inbound 443 from 0.0.0.0/0, and database access is be
+
+=== ID 213 ===
+Q: A solutions architect is designing a two-tier architecture that includes a public subnet and a database subnet. The web servers in the public subnet must be accessible from the internet on port 443. The Amazon RDS for MySQL DB instance in the database subnet must be reachable only by the web servers on port 3306.
+
+Which combination of steps should the solutions architect take to satisfy these requirements?
+ANSWER: c:Create a security group for the web servers in the public subnet. Add a rule to allow traffic from 0.0.0.0/0 on port 443.; d:Create a security group for the DB instance. Add a rule to allow traffic from the web servers’ security group on port 3306.
+EXPL: The web tier needs an inbound security group rule that allows HTTPS from anywhere, so the web servers’ security group should permit TCP port 443 from `0.0.0.0/0`. The database tier should not be opened to an entire subnet CIDR; instead, the DB instance security group should allow MySQL traffic on po
+
+=== ID 926 ===
+Q: A company plans to deploy a new public web application on AWS. The application includes a web server tier that uses Amazon EC2 instances. The application also includes a database tier that uses an Amazon RDS for MySQL DB instance.
+
+The application must be secure and accessible to global customers who have dynamic IP addresses.
+
+How should a solutions architect configure the security groups to meet these requirements?
+ANSWER: a:Configure the security group for the web servers to allow inbound traffic on port 443 from 0.0.0.0/0. Configure the security group for the DB instance to allow inbound traffic on port 3306 from the security group of the web servers.
+EXPL: A public web tier that must be reachable by worldwide users with changing IP addresses needs an inbound HTTPS rule on port 443 from `0.0.0.0/0`. The RDS for MySQL database should not allow direct internet access; instead, its security group should allow inbound MySQL traffic on port 3306 only from t
+
+=== ID 1018 ===
+Q: A solutions architect is designing a three-tier web application. The architecture includes:
+
+Security is a high priority for the company.
+
+Which combination of security group configurations should the solutions architect use?
+ANSWER: a:Configure the security group for the web tier to allow inbound HTTPS traffic from the security group for the ALB.; c:Configure the security group for the database tier to allow inbound Microsoft SQL Server traffic from the security group for the application tier.; e:Configure the security group for the application tier to allow inbound HTTPS traffic from the security group for the web tier.
+EXPL: In a secure three-tier AWS architecture, security groups should enforce least-privilege access between adjacent tiers by referencing the source tier’s security group. The web tier should allow inbound HTTPS only from the ALB security group. The application tier should allow inbound HTTPS only from t
+
+=== ID 202 ===
+Q: A company has a custom application containing embedded credentials that retrieves information from a database in an Amazon RDS for MySQL DB cluster. The company needs to improve the application's security with minimal programming effort. The company has created database credentials for the application user on the RDS for MySQL database.
+
+Which solution meets these requirements?
+ANSWER: c:Store the credentials in AWS Secrets Manager. Configure the application to load the database credentials from Secrets Manager. Set up a credentials rotation schedule by creating an AWS Lambda function for Secrets Manager.
+EXPL: AWS Secrets Manager securely stores database credentials so the application can retrieve them at runtime instead of embedding them in code. For Amazon RDS database secrets, Secrets Manager can schedule automatic rotation and invoke a Lambda rotation function to update both the secret and the databas
+
+=== ID 880 ===
+Q: A company has a custom application that contains embedded credentials and retrieves information from an Amazon RDS for MySQL DB instance.
+
+Management states that the application must be made more secure with the least amount of programming effort.
+
+What should a solutions architect do to meet these requirements?
+ANSWER: c:Create credentials on the RDS for MySQL database for the application user and store the credentials in AWS Secrets Manager. Configure the application to load the database credentials from Secrets Manager. Set up a credentials rotation schedule for the application user in the RDS for MySQL database using Secrets Manager.
+EXPL: AWS Secrets Manager is the correct service for replacing hardcoded database credentials because it is designed to store, retrieve, and rotate secrets such as Amazon RDS credentials. For RDS MySQL, Secrets Manager supports setting a rotation schedule so the application can read the credentials from S
+
+=== ID 204 ===
+Q: A company uses high block storage capacity to run its workloads on premises. The company's daily peak input/output transactions per second do not exceed 15,000 IOPS. The company wants to migrate the workloads to Amazon EC2 and provision disk performance independently of storage capacity.
+
+Which Amazon Elastic Block Store (Amazon EBS) volume type will meet these requirements **MOST cost-effectively**?
+ANSWER: c:GP3 volume type
+EXPL: Amazon EBS gp3 volumes are designed so IOPS and throughput can be provisioned independently of volume size, which directly satisfies the requirement to decouple performance from storage capacity. AWS documents gp3 as a general purpose SSD option for transactional workloads, with support up to 80,000
+
+=== ID 479 ===
+Q: An ecommerce company runs a PostgreSQL database on premises. The database stores data by using high-IOPS Amazon Elastic Block Store (Amazon EBS) block storage. The daily peak I/O transactions per second do not exceed **15,000 IOPS**. The company wants to migrate the database to **Amazon RDS for PostgreSQL** and provision disk IOPS performance **independently of disk storage capacity**.
+
+Which solution will meet these requirements **MOST cost-effectively**?
+ANSWER: c:Configure the General Purpose SSD (gp3) EBS volume storage type and provision 15,000 IOPS.
+EXPL: For Amazon RDS for PostgreSQL, General Purpose SSD **gp3** supports provisioning IOPS separately from allocated storage capacity, which directly satisfies the independence requirement. It is also the more cost-effective choice than Provisioned IOPS **io1** for a workload whose peak demand is only **
+
+=== ID 211 ===
+Q: A company needs to optimize the cost of its Amazon EC2 instances. The company also needs to change the type and family of its EC2 instances every 2–3 months.
+
+What should the company do to meet these requirements?
+ANSWER: b:Purchase a No Upfront Compute Savings Plan for a 1-year term.
+EXPL: Compute Savings Plans are designed for workloads that need pricing discounts without committing to a specific EC2 instance family or type. They automatically apply to EC2 usage regardless of instance family, size, Region, operating system, or tenancy, so the company can move between different instan
+
+=== ID 732 ===
+Q: A company is moving its databases to Amazon RDS for PostgreSQL and its applications to Amazon EC2 instances. The company wants to optimize costs for long-running workloads.
+
+Which solution will meet this requirement **MOST** cost-effectively?
+ANSWER: d:Purchase Reserved Instances for a 3 year term with the All Upfront option for the Amazon RDS for PostgreSQL workloads. Purchase a 3 year EC2 Instance Savings Plan with the All Upfront option for the EC2 instances.
+EXPL: For steady, long-running usage, Amazon RDS Reserved Instances reduce DB instance costs versus On-Demand pricing, and the 3-year All Upfront option provides the highest discount. Savings Plans provide discounted EC2 usage in exchange for a one- or three-year commitment, and All Upfront provides the m
+
+=== ID 215 ===
+Q: A company uses Amazon API Gateway to manage its REST APIs that third-party service providers access. The company must protect the REST APIs from SQL injection and cross-site scripting attacks.
+
+What is the **MOST operationally efficient** solution that meets these requirements?
+ANSWER: b:Configure AWS WAF.
+EXPL: AWS WAF is the correct service because it protects web applications and APIs from common web exploits, including SQL injection and cross-site scripting (XSS). Amazon API Gateway REST API stages can be associated directly with an AWS WAF web ACL, so no CloudFront distribution is required to meet this
+
+=== ID 951 ===
+Q: A global company uses Amazon API Gateway to design REST APIs for its loyalty club users in the `us-east-1` Region and the `ap-southeast-2` Region. A solutions architect must design a solution to protect these API Gateway managed REST APIs across multiple accounts from SQL injection and cross-site scripting attacks.
+
+Which solution will meet these requirements with the **LEAST** amount of administrative effort?
+ANSWER: b:Set up AWS Firewall Manager in both Regions. Centrally configure AWS WAF rules.
+EXPL: AWS WAF is the AWS service that protects API Gateway REST APIs from common web exploits such as SQL injection and cross-site scripting by associating a Regional web ACL with an API stage. When the protection must be applied across multiple AWS accounts with minimal ongoing administration, AWS Firewa
+
+=== ID 220 ===
+Q: A company runs a website analytics application on a single Amazon EC2 On-Demand Instance. The analytics application is written in PHP and uses a MySQL database. The analytics software, the web server that serves PHP, and the database server are all running on the EC2 instance.
+
+The application is showing signs of performance degradation during busy periods and is returning 5xx errors. The company needs the application to scale seamlessly.
+
+Which solution will meet these requirements **MOST cost-effectively**?
+ANSWER: d:Migrate the database to an Amazon Aurora MySQL DB instance. Create an AMI of the web application. Apply the AMI to a launch template. Create an Auto Scaling group with the launch template Configure the launch template to use a Spot Fleet. Attach an Application Load Balancer to the Auto Scaling group.
+EXPL: Option D is the only design that scales the web tier automatically. The AMI and launch template let an Auto Scaling group add or replace EC2 instances as demand changes, while the Application Load Balancer distributes requests across healthy instances. Moving MySQL to Aurora separates the database f
+
+=== ID 737 ===
+Q: A company hosts a website analytics application on a single Amazon EC2 On-Demand Instance. The analytics application is highly resilient and designed to operate in stateless mode.
+
+The company notices performance degradation and 5xx errors during busy periods. The company needs the application to scale seamlessly.
+
+Which solution will meet these requirements MOST cost-effectively?
+ANSWER: d:Create an Amazon Machine Image (AMI) of the web application. Apply the AMI to a launch template. Create an Auto Scaling group that includes the launch template. Configure the launch template to use a Spot Fleet. Attach an Application Load Balancer to the Auto Scaling group.
+EXPL: Amazon EC2 Auto Scaling can add and remove application instances as demand changes, and an Application Load Balancer distributes traffic across the healthy instances that the Auto Scaling group registers. Stateless, fault-tolerant web and analytics workloads are suitable for Spot capacity, which red
+
+=== ID 253 ===
+Q: A company runs its application in the AWS Cloud. The application uses Amazon EC2 instances behind an Elastic Load Balancer in an Auto Scaling group, along with an Amazon DynamoDB table. The company wants to make sure the application can be made available in another AWS Region with minimal downtime.
+
+What should a solutions architect do to meet these requirements with the **LEAST** downtime?
+ANSWER: a:Create an Auto Scaling group and a load balancer in the disaster recovery Region. Configure the DynamoDB table as a global table. Configure DNS failover to point to the new disaster recovery Region's load balancer.
+EXPL: A warm standby deployment in the disaster recovery Region minimizes recovery time because the load balancer and Auto Scaling group already exist and can serve traffic after failover. Amazon DynamoDB global tables replicate data across Regions, so the database is already available in the secondary Re
+
+=== ID 337 ===
+Q: A company hosts its application in the AWS Cloud. The application runs on Amazon EC2 instances in an Auto Scaling group behind an Elastic Load Balancing (ELB) load balancer. The application connects to an Amazon DynamoDB table.
+
+For disaster recovery (DR), the company wants to make sure that the application is available from another AWS Region with minimal downtime.
+
+Which solution will meet these requirements with the **LEAST** downtime?
+ANSWER: a:Create an Auto Scaling group and an ELB in the DR Region. Configure the DynamoDB table as a global table. Configure DNS failover to point to the new DR Region's ELB.
+EXPL: The lowest-downtime DR design is a warm standby or multi-Region pattern in which the DR Region already has the application tier deployed and DynamoDB data is already replicated there. DynamoDB global tables replicate table data across Regions and are intended to support multi-Region resilience with 
+
+=== ID 262 ===
+Q: A company runs a business-critical web application on Amazon EC2 instances behind an Application Load Balancer. The EC2 instances are in an Auto Scaling group. The application uses an Amazon Aurora PostgreSQL database deployed in a single Availability Zone. The company wants the application to be highly available with minimum downtime and minimum data loss.
+
+Which solution will meet these requirements with the **LEAST** operational effort?
+ANSWER: b:Configure the Auto Scaling group to use multiple Availability Zones. Configure the database as Multi-AZ. Configure an Amazon RDS Proxy instance for the database.
+EXPL: The lowest-effort way to achieve high availability with minimal downtime and minimal data loss is to run the Auto Scaling group across multiple Availability Zones and use a Multi-AZ database deployment. EC2 Auto Scaling balances instances across enabled Availability Zones and can replace capacity in
+
+=== ID 834 ===
+Q: A company runs a critical business application on Amazon EC2 instances behind an Application Load Balancer. The EC2 instances run in an Auto Scaling group and access an Amazon RDS DB instance.
+
+The design failed an operational review because the EC2 instances and the DB instance are all in a single Availability Zone. A solutions architect must revise the design to use a second Availability Zone.
+
+Which solution will make the application highly available?
+ANSWER: c:Provision a subnet in each Availability Zone. Configure the Auto Scaling group to distribute the EC2 instances across both Availability Zones. Configure the DB instance for Multi-AZ deployment.
+EXPL: A highly available design in this scenario requires the compute tier to run across multiple Availability Zones and the database tier to use Amazon RDS Multi-AZ. In AWS, each subnet resides in exactly one Availability Zone, so the architecture needs one subnet in each AZ and the Auto Scaling group co
+
+=== ID 281 ===
+Q: A company is building an Amazon Elastic Kubernetes Service (Amazon EKS) cluster for its workloads. All secrets stored in Amazon EKS must be encrypted in the Kubernetes `etcd` key-value store.
+
+Which solution meets these requirements?
+ANSWER: b:Create a new AWS Key Management Service (AWS KMS) key. Enable Amazon EKS KMS secrets encryption on the Amazon EKS cluster.
+EXPL: Amazon EKS meets this requirement by using AWS KMS envelope encryption for Kubernetes secrets in `etcd`. AWS documents that enabling Amazon EKS KMS secrets encryption causes Kubernetes secrets to be encrypted with the selected KMS key, and the EKS API supports an `EncryptionConfig` whose supported r
+
+=== ID 631 ===
+Q: A company uses Amazon Elastic Kubernetes Service (Amazon EKS) to run a container application. The EKS cluster stores sensitive information in the Kubernetes secrets object. The company wants to ensure that the information is encrypted.
+
+Which solution will meet these requirements with the **LEAST operational overhead**?
+ANSWER: b:Enable secrets encryption in the EKS cluster by using AWS Key Management Service (AWS KMS).
+EXPL: Amazon EKS supports native envelope encryption for Kubernetes secrets by using AWS Key Management Service (AWS KMS). Enabling EKS secrets encryption encrypts the Kubernetes `secrets` resources stored by the cluster, which is exactly the data identified in the requirement. This is the lowest-overhead
+
+=== ID 301 ===
+Q: A company runs an SMB file server in its data center. The file server contains large files that are accessed often during the first few days after the files are created. After 7 days, the files are seldom accessed.
+
+The total amount of data is growing and is nearing the company's total storage capacity. A solutions architect must increase the available storage space without losing low-latency access to the most recently accessed files. The solutions architect must also provide file lifecycle management to prevent future storage issues.
+
+Which solution will meet these requirements?
+ANSWER: b:Create an Amazon S3 File Gateway to extend the company's storage space. Create an S3 Lifecycle policy to transition the data to S3 Glacier Deep Archive after 7 days.
+EXPL: S3 File Gateway extends on-premises SMB environments with virtually unlimited S3-backed capacity while maintaining low-latency local caching for frequently accessed files. S3 Lifecycle policies automatically transition older files to Glacier Deep Archive after 7 days, reducing storage costs and meet
+
+=== ID 709 ===
+Q: A company operates an SMB file server in its data center. The file server stores large files that the company often accesses for up to 7 days after the files are created. After 7 days, the company must still be able to access the files with a maximum retrieval time of 24 hours.
+
+Which solution will meet these requirements?
+ANSWER: b:Create an Amazon S3 File Gateway to increase the company's storage space. Create an S3 Lifecycle policy to transition the data to S3 Glacier Deep Archive after 7 days.
+EXPL: Amazon S3 File Gateway maintains SMB protocol compatibility, allowing seamless migration from on-premises SMB file servers without requiring users to change access patterns. S3 Glacier Deep Archive standard retrieval completes within 12 hours, satisfying the 24-hour requirement for archived files. T
+
+=== ID 422 ===
+Q: A company uses AWS Organizations. A member account has purchased a Compute Savings Plan. Because of workload changes inside the member account, the account no longer receives the full benefit of the Compute Savings Plan commitment. The company is using less than 50% of its purchased compute power.
+ANSWER: b:Turn on discount sharing from the Billing Preferences section of the account console in the company's Organizations management account.
+EXPL: In an AWS Organizations consolidated billing family, a Compute Savings Plan is applied to the purchasing account first and then can apply to eligible usage in other organization accounts only when discount sharing is enabled. AWS Billing documentation states that the management account controls Rese
+
+=== ID 762 ===
+Q: A company runs Amazon EC2 instances in multiple AWS accounts that are billed separately. The company recently purchased a Savings Plan. Because of changes in the company’s business requirements, the company has decommissioned a large number of EC2 instances. The company wants to use its Savings Plan discounts on its other AWS accounts.
+
+Which combination of steps will meet these requirements?
+ANSWER: a:From the AWS Account Management Console of the management account, turn on discount sharing from the billing preferences section.; e:Create an organization in AWS Organizations in the existing AWS account with the existing EC2 instances and Savings Plan. Invite the other AWS accounts to join the organization from the management account.
+EXPL: Savings Plans discounts are shared across accounts only when the accounts are in the same AWS Organizations consolidated billing family and discount sharing is enabled. AWS documentation states that, in a consolidated billing family, Savings Plans apply to other accounts’ usage only if sharing is en
+
+=== ID 434 ===
+Q: A company runs an application by using Amazon EC2 instances and AWS Lambda functions. The EC2 instances run in private subnets in a VPC. The Lambda functions require direct network access to the EC2 instances for the application to function.
+
+The application will run for 1 year. The number of Lambda functions that the application uses will increase during the 1-year period. The company must minimize costs for all application resources.
+
+Which solution will meet these requirements?
+ANSWER: c:Purchase a Compute Savings Plan. Connect the Lambda functions to the private subnets that contain the EC2 instances.
+EXPL: AWS Lambda functions that need to reach Amazon EC2 instances in private subnets should be attached to the VPC through private subnets, which gives them private network connectivity to those resources. To minimize 1-year compute costs when the environment uses both Amazon EC2 and AWS Lambda and Lambd
+
+=== ID 957 ===
+Q: A company uses Amazon EC2 instances and AWS Lambda functions to run its application. The company has VPCs with public subnets and private subnets in its AWS account. The EC2 instances run in a private subnet in one of the VPCs. The Lambda functions need direct network access to the EC2 instances for the application to work.
+
+The application will run for at least 1 year. The company expects the number of Lambda functions that the application uses to increase during that time. The company wants to maximize its savings on all application resources and to keep network latency between the services low.
+
+Which solution will meet these requirements?
+ANSWER: c:Purchase a Compute Savings Plan. Optimize the Lambda functions’ duration and memory usage, the number of invocations, and the amount of data that is transferred. Connect the Lambda functions to the private subnet that contains the EC2 instances.
+EXPL: Compute Savings Plans are the correct cost option because they apply to both Amazon EC2 and AWS Lambda usage, whereas EC2 Instance Savings Plans do not cover Lambda. Because the workload will run for at least 1 year and Lambda usage is expected to grow, a Compute Savings Plan maximizes savings acros
+
+=== ID 738 ===
+Q: A company operates an internal application on Amazon EC2 instances in an Auto Scaling group. The EC2 instances are compute optimized and use Amazon Elastic Block Store (Amazon EBS) volumes.
+
+The company needs to identify cost-optimization opportunities across the EC2 instances, the Auto Scaling group, and the EBS volumes.
+
+Which solution meets these requirements with the **MOST** operational efficiency?
+ANSWER: c:Configure AWS Compute Optimizer for cost recommendations for the EC2 instances, the Auto Scaling group and the EBS volumes.
+EXPL: AWS Compute Optimizer generates optimization recommendations from resource configuration and utilization metrics for Amazon EC2 instances, EC2 Auto Scaling groups, and Amazon EBS volumes. A single Compute Optimizer configuration therefore provides the required rightsizing and cost recommendations ac
+
+=== ID 800 ===
+Q: A company runs its production workload on Amazon EC2 instances with Amazon Elastic Block Store (Amazon EBS) volumes. A solutions architect must analyze the current EBS volume cost and recommend optimizations. The recommendations must include estimated monthly savings opportunities.
+
+Which solution meets these requirements?
+ANSWER: d:Use AWS Compute Optimizer to generate EBS volume recommendations for optimization.
+EXPL: AWS Compute Optimizer is the AWS service that generates optimization recommendations for Amazon EBS volumes by analyzing their specifications and utilization metrics. Its EBS recommendations include proposed volume changes such as type, size, IOPS, and throughput, and it also shows estimated monthly
+
+=== ID 789 ===
+Q: A solutions architect must ensure that API calls to Amazon DynamoDB from Amazon EC2 instances in a VPC do not traverse the internet.
+
+Which combination of steps should the solutions architect take to meet this requirement?
+ANSWER: a:Create a route table entry for the endpoint.; b:Create a gateway endpoint for DynamoDB.
+EXPL: Amazon DynamoDB can be accessed privately from a VPC by using a **gateway VPC endpoint**. For this endpoint type, the VPC's **route tables** must direct DynamoDB-bound traffic to the endpoint so instances use the AWS private network path instead of internet-based routing. The interface-endpoint acti
+
+=== ID 795 ===
+Q: A company hosts a web application on multiple Amazon EC2 instances in a VPC. The application must write sensitive data to an Amazon S3 bucket. The data must not traverse the public internet.
+
+Which solution meets these requirements?
+ANSWER: a:Create a gateway VPC endpoint for Amazon S3. Create a route in the VPC route table to the endpoint.
+EXPL: A gateway VPC endpoint for Amazon S3 allows instances in a VPC to access S3 over the AWS network without requiring an internet gateway or NAT device, so the traffic does not go over the public internet. The endpoint is associated with the VPC route tables so traffic destined for S3 is routed to the 

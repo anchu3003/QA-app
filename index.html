@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quiz Practice</title>
+<meta name="description" content="A lightweight, offline-first app for practicing Q&A question sets." />
+<meta name="theme-color" content="#4f46e5" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%98%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">📘</span>
+      <span class="brand-name">Quiz Practice</span>
+    </div>
+    <div class="header-right">
+      <div id="timer-chip" class="timer-chip" hidden></div>
+      <div id="mode-badge" class="mode-badge" hidden></div>
+      <button type="button" id="theme-toggle" class="btn btn-icon" title="Theme" aria-label="Switch theme">🌗</button>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- COLLECTIONS (HOME) SCREEN -->
+    <section id="screen-collections" class="screen">
+      <div class="section-row">
+        <h1>Your Collections</h1>
+        <div class="section-actions">
+          <button type="button" id="btn-import-backup" class="btn btn-ghost">⬆ Import backup</button>
+          <button type="button" id="btn-show-import" class="btn btn-primary">+ Import New Collection</button>
+        </div>
+      </div>
+      <p class="muted">Collections are saved in this browser (IndexedDB), so you only need to import a question set once.</p>
+      <input type="file" id="backup-input" accept=".json,application/json" hidden />
+
+      <div id="collections-empty" class="card empty-state">
+        <p>No collections yet. Click <strong>Import New Collection</strong> to add your first Q&amp;A set.</p>
+      </div>
+      <div id="collections-grid" class="collections-grid"></div>
+
+      <!-- IMPORT PANEL -->
+      <div id="import-panel" class="card import-panel" hidden>
+        <div class="panel-head">
+          <h2>Import a Q&amp;A collection</h2>
+          <button type="button" id="btn-hide-import" class="btn btn-link">Close</button>
+        </div>
+        <p class="muted">Upload a JSON file in the supported quiz format (see README.md for the schema).</p>
+
+        <div class="setup-row">
+          <label class="file-drop" for="file-input">
+            <span class="file-drop-icon" aria-hidden="true">📂</span>
+            <span>Click to choose a JSON file</span>
+            <input type="file" id="file-input" accept=".json,application/json" hidden />
+          </label>
+          <div class="sample-buttons">
+            <button type="button" id="btn-load-sample" class="btn btn-ghost">Load small sample</button>
+            <button type="button" id="btn-load-full" class="btn btn-ghost">Load full question bank</button>
+          </div>
+        </div>
+
+        <details class="paste-details">
+          <summary>Or paste JSON text</summary>
+          <textarea id="paste-area" rows="6" placeholder='[ { "question": "...", "options": { "a": "...", "b": "..." }, "answer": "a" } ]'></textarea>
+          <button type="button" id="btn-load-paste" class="btn btn-ghost">Parse pasted JSON</button>
+        </details>
+
+        <p id="setup-status" class="status-text"></p>
+        <p id="setup-error" class="error-text" hidden></p>
+        <div id="setup-errors-list" class="error-list" hidden></div>
+
+        <div class="config-form" id="config-form" hidden>
+          <h3>Collection settings</h3>
+          <div class="config-grid">
+            <label class="field">
+              <span>Collection name</span>
+              <input type="text" id="cfg-name" maxlength="80" />
+            </label>
+            <label class="field">
+              <span>Exam mode — number of questions</span>
+              <input type="number" id="cfg-exam-limit" min="1" />
+            </label>
+            <label class="field">
+              <span>Exam mode — time limit (minutes)</span>
+              <input type="number" id="cfg-exam-time" min="1" />
+            </label>
+          </div>
+          <p class="muted small">These exam settings are saved with the collection and reused every time you start Exam Mode.</p>
+          <div class="config-actions">
+            <button type="button" id="btn-save-collection" class="btn btn-primary">Save Collection</button>
+            <button type="button" id="btn-cancel-import" class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LEARN-BY-TOPIC SCREEN -->
+    <section id="screen-topics" class="screen" hidden>
+      <div class="section-row">
+        <button type="button" id="btn-topics-back" class="btn btn-link">← Back to collections</button>
+        <h1 id="topics-title">Learn by Topic</h1>
+      </div>
+      <p class="muted">Pick a topic to focus your study session. Progress is saved automatically.</p>
+      <div id="topics-grid" class="collections-grid"></div>
+    </section>
+
+    <!-- QUIZ SCREEN (paginated, 25 questions per page) -->
+    <section id="screen-quiz" class="screen" hidden>
+      <div class="quiz-toolbar">
+        <button type="button" id="btn-exit" class="btn btn-link">← Exit</button>
+        <div class="progress-wrap">
+          <span id="progress-text" class="progress-text" aria-live="polite"></span>
+          <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+            <div id="progress-fill" class="progress-fill"></div>
+          </div>
+        </div>
+        <div class="toolbar-actions">
+          <button type="button" id="btn-toggle-navigator" class="btn btn-ghost" aria-expanded="false" aria-controls="navigator-panel" hidden>🧭 Navigator</button>
+          <button type="button" id="btn-finish-exam" class="btn btn-danger" hidden>Submit Exam</button>
+        </div>
+      </div>
+
+      <div id="navigator-panel" class="card navigator-panel" hidden>
+        <div class="navigator-head">
+          <strong>Question navigator</strong>
+          <label class="flag-toggle">
+            <input type="checkbox" id="flag-filter" />
+            <span>Show only flagged</span>
+          </label>
+        </div>
+        <div id="navigator-grid" class="navigator-grid"></div>
+        <p class="muted small navigator-legend">
+          <span class="legend-dot answered"></span> answered
+          <span class="legend-dot flagged"></span> flagged
+          <span class="legend-dot"></span> unanswered
+        </p>
+      </div>
+
+      <div id="question-list" class="question-list"></div>
+      <nav id="pagination" class="pagination" aria-label="Question pages"></nav>
+    </section>
+
+    <!-- RESULTS SCREEN -->
+    <section id="screen-results" class="screen" hidden>
+      <div class="card results-summary" id="results-summary"></div>
+      <div id="results-filter" class="results-filter" role="group" aria-label="Filter results"></div>
+      <div id="results-list" class="results-list"></div>
+      <div class="results-actions">
+        <button type="button" id="btn-retake" class="btn btn-primary">Retake</button>
+        <button type="button" id="btn-back-topics" class="btn btn-ghost" hidden>Back to topics</button>
+        <button type="button" id="btn-back-collections" class="btn btn-ghost">Back to collections</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- EDIT SETTINGS MODAL -->
+  <div id="edit-modal" class="modal" hidden>
+    <div class="modal-card card" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title">
+      <h2 id="edit-modal-title">Edit collection settings</h2>
+      <form id="edit-form">
+        <label class="field">
+          <span>Collection name</span>
+          <input type="text" id="edit-name" maxlength="80" required />
+        </label>
+        <div class="config-grid">
+          <label class="field">
+            <span>Exam questions</span>
+            <input type="number" id="edit-exam-limit" min="1" />
+          </label>
+          <label class="field">
+            <span>Exam time (minutes)</span>
+            <input type="number" id="edit-exam-time" min="1" />
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button type="button" id="btn-cancel-edit" class="btn btn-ghost">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
+
+

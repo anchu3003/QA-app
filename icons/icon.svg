@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Quiz Practice">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7c7cf0" />
+      <stop offset="1" stop-color="#4a4ac2" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)" />
+  <path d="M150 150h150a40 40 0 0 1 40 40v172a40 40 0 0 1-40 40H150a30 30 0 0 1-30-30V180a30 30 0 0 1 30-30z"
+        fill="#ffffff" opacity="0.16" />
+  <text x="256" y="322" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif"
+        font-size="220" font-weight="700" fill="#ffffff">Q</text>
+</svg>

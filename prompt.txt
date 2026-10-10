@@ -1,0 +1,24 @@
+Gen me a application that I use to practice quesions. The app can import Q&A list. format refer from quiz.json
+The app should:
+- support unlimit options
+- support multi-correct answer
+- highlight correct options
+- display explain section after correct answer is highlight
+- have mode to show answer imediately after click an option 
+- Study Mode: Gives you immediate, color-coded feedback after each answer.  
+- Exam Mode: Simulates a real test environment where the final grade/score is only revealed at the very end.
+- Auto shuffle questions every the app start
+- the app should run on browser by click an index.html file (or other simple way to start)
+- source code should have readme.md
+- the app should be javascript-based
+- the app should have css for good-looking
+
+
+the app should:
+- save the source of question in form of a collection. it's should have stateful, mean I don't need to re-import every time I open it
+- the app should paging question for every 25 question
+- exam mode should have limit questions and time and is set when user import the collection
+- you can refer css and layout from this website https://examcademy.com/exams/amazon/aws-certified-solutions-architect-associate-saa-c03/1
+
+========================================
+List of question, mark to review in exam mode

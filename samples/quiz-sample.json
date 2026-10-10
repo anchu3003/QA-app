@@ -1,0 +1,67 @@
+[
+  {
+    "question": "Which AWS service is a fully managed NoSQL key-value database?",
+    "options": {
+      "a": "Amazon RDS",
+      "b": "Amazon DynamoDB",
+      "c": "Amazon Redshift",
+      "d": "Amazon Aurora"
+    },
+    "answer": "b",
+    "topic": "Databases",
+    "explanation": "DynamoDB is AWS's fully managed key-value/NoSQL database.",
+    "id": 1
+  },
+  {
+    "question": "Which of the following are AWS compute services? (Select TWO)\n\n- Serverless functions\n- Managed VMs\n- Object storage\n- DNS",
+    "options": {
+      "a": "Amazon EC2",
+      "b": "Amazon S3",
+      "c": "AWS Lambda",
+      "d": "Amazon Route 53"
+    },
+    "answer": ["a", "c"],
+    "topic": "Compute",
+    "explanation": "EC2 and Lambda are compute services; S3 is storage and Route 53 is DNS.",
+    "id": 2
+  },
+  {
+    "question": "Which statement about an Amazon S3 **gateway VPC endpoint** is correct?",
+    "options": {
+      "a": "It requires a NAT gateway to reach S3.",
+      "b": "It keeps S3 traffic private without a NAT gateway.",
+      "c": "It encrypts objects automatically.",
+      "d": "It only works with S3 Glacier."
+    },
+    "answer": "b",
+    "topic": "Networking",
+    "explanation": "A gateway endpoint keeps S3 traffic on the AWS network, avoiding NAT costs. See the `aws:ResourceAccount` condition key for restricting access.",
+    "id": 3
+  },
+  {
+    "question": "A company needs to replace physical backup tapes while keeping existing backup software. What should they use?\n\n![Diagram](https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Amazon_Web_Services_Logo.svg/120px-Amazon_Web_Services_Logo.svg.png)",
+    "options": {
+      "a": "AWS Storage Gateway Tape Gateway (VTL)",
+      "b": "Amazon EFS",
+      "c": "Amazon EBS",
+      "d": "AWS Snowball"
+    },
+    "answer": "a",
+    "topic": "Storage",
+    "explanation": "Tape Gateway exposes a virtual tape library over iSCSI so existing tape-based backup workflows keep working.",
+    "id": 4
+  },
+  {
+    "question": "Which metric should be monitored to detect READ capacity exhaustion on a DynamoDB table?",
+    "options": {
+      "a": "ThrottledRequests",
+      "b": "CPUUtilization",
+      "c": "DiskQueueDepth",
+      "d": "FreeStorageSpace"
+    },
+    "answer": "a",
+    "topic": "Databases",
+    "explanation": "ThrottledRequests indicates capacity limits are being hit.",
+    "id": 5
+  }
+]

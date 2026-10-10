@@ -1,0 +1,19 @@
+{
+  "name": "Quiz Practice",
+  "short_name": "Quiz",
+  "description": "Offline-first practice app for Q&A question sets.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0e1016",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

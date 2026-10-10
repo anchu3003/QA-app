@@ -1,0 +1,24 @@
+# Dependencies / build output (none required, but ignore just in case)
+node_modules/
+dist/
+build/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Scratch output from the data-processing scripts
+scripts/*.tmp.json

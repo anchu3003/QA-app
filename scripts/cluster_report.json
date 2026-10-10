@@ -1,0 +1,167 @@
+[
+  {
+    "root": 5,
+    "ids": [
+      5,
+      775
+    ],
+    "questions": [
+      "A company runs a global web application on Amazon EC2 instances behind an Application Load Balancer. The application sto",
+      "A company operates a web application on Amazon EC2 instances in an Auto Scaling group behind an Application Load Balance"
+    ]
+  },
+  {
+    "root": 65,
+    "ids": [
+      65,
+      307
+    ],
+    "questions": [
+      "A company plans to move its data to an Amazon S3 bucket. The data must be encrypted while stored in the S3 bucket. In ad",
+      "A company plans to migrate data to an Amazon S3 bucket. The data must be encrypted at rest in the S3 bucket, and the enc"
+    ]
+  },
+  {
+    "root": 66,
+    "ids": [
+      66,
+      328
+    ],
+    "questions": [
+      "A company has multiple AWS accounts that use consolidated billing. The company runs several active, high-performance Ama",
+      "A company runs several Amazon RDS for Oracle On-Demand DB instances that have high utilization. The RDS DB instances run"
+    ]
+  },
+  {
+    "root": 102,
+    "ids": [
+      102,
+      779
+    ],
+    "questions": [
+      "A consumer-survey company has collected data for several years from a particular geographic region. The company stores t",
+      "A survey company has collected data for several years from regions in the United States. The company stores the data in "
+    ]
+  },
+  {
+    "root": 186,
+    "ids": [
+      186,
+      445
+    ],
+    "questions": [
+      "A company has engaged an external vendor to perform work in the company’s AWS account. The vendor uses an automated tool",
+      "A company has hired an external vendor to perform work in the company’s AWS account. The vendor uses an automated tool t"
+    ]
+  },
+  {
+    "root": 202,
+    "ids": [
+      202,
+      880
+    ],
+    "questions": [
+      "A company has a custom application containing embedded credentials that retrieves information from a database in an Amaz",
+      "A company has a custom application that contains embedded credentials and retrieves information from an Amazon RDS for M"
+    ]
+  },
+  {
+    "root": 204,
+    "ids": [
+      204,
+      479
+    ],
+    "questions": [
+      "A company uses high block storage capacity to run its workloads on premises. The company's daily peak input/output trans",
+      "An ecommerce company runs a PostgreSQL database on premises. The database stores data by using high-IOPS Amazon Elastic "
+    ]
+  },
+  {
+    "root": 218,
+    "ids": [
+      218,
+      623
+    ],
+    "questions": [
+      "A global company runs its workloads on AWS. The company's application uses Amazon S3 buckets across AWS Regions for sens",
+      "A global company runs its workloads on AWS. The company's application uses Amazon S3 buckets across AWS Regions for sens"
+    ]
+  },
+  {
+    "root": 220,
+    "ids": [
+      220,
+      737
+    ],
+    "questions": [
+      "A company runs a website analytics application on a single Amazon EC2 On-Demand Instance. The analytics application is w",
+      "A company hosts a website analytics application on a single Amazon EC2 On-Demand Instance. The analytics application is "
+    ]
+  },
+  {
+    "root": 253,
+    "ids": [
+      253,
+      337
+    ],
+    "questions": [
+      "A company runs its application in the AWS Cloud. The application uses Amazon EC2 instances behind an Elastic Load Balanc",
+      "A company hosts its application in the AWS Cloud. The application runs on Amazon EC2 instances in an Auto Scaling group "
+    ]
+  },
+  {
+    "root": 320,
+    "ids": [
+      320,
+      985
+    ],
+    "questions": [
+      "A company uses Amazon S3 to host its static website. The company wants to add a contact form to the webpage. The contact",
+      "A company hosts its static website by using Amazon S3. The company wants to add a contact form to its webpage. The conta"
+    ]
+  },
+  {
+    "root": 372,
+    "ids": [
+      372,
+      691
+    ],
+    "questions": [
+      "A company is deploying a shared storage solution for a media application hosted in the AWS Cloud. The company requires t",
+      "A company is deploying a shared storage solution for a media application that it hosts on AWS. The company requires the "
+    ]
+  },
+  {
+    "root": 562,
+    "ids": [
+      562,
+      881
+    ],
+    "questions": [
+      "A company is migrating applications from a self-managed, on-premises Microsoft Active Directory to AWS. The company depl",
+      "A company is moving applications to AWS. The applications are deployed in different accounts. The company centrally mana"
+    ]
+  },
+  {
+    "root": 581,
+    "ids": [
+      581,
+      608
+    ],
+    "questions": [
+      "A company runs a food delivery service. Due to recent growth, its order-processing system is encountering scaling issues",
+      "A company provides a food delivery service that is expanding quickly. Because of this growth, the company’s order proces"
+    ]
+  },
+  {
+    "root": 853,
+    "ids": [
+      853,
+      910
+    ],
+    "questions": [
+      "A company has a data ingestion workflow that consists of the following:\n\nThe company notices that the ingestion workflow",
+      "A company has a data ingestion workflow that includes the following components:\n\nThe ingestion workflow sometimes fails "
+    ]
+  }
+]
